@@ -2,6 +2,7 @@
 pragma solidity 0.8.24;
 
 import {Script} from "forge-std/Script.sol";
+import {console2} from "forge-std/console2.sol";
 import {SolventVault} from "../src/SolventVault.sol";
 import {SolventAttestation} from "../src/SolventAttestation.sol";
 import {IIdentityRegistry} from "../src/interfaces/IIdentityRegistry.sol";
@@ -50,6 +51,13 @@ contract Deploy is Script {
             (uint32(1) << uint8(ActionType.UNWIND_BRIDGE)) |
             (uint32(1) << uint8(ActionType.PARK_YIELD));
 
+        require(identityRegistry != address(0), "IDENTITY_REGISTRY_ADDRESS not set");
+        require(asset != address(0), "ASSET_ADDRESS not set");
+        require(safeAsset != address(0), "SAFE_ASSET_ADDRESS not set");
+        require(dexRouter != address(0), "DEX_ROUTER_ADDRESS not set");
+        require(bridgeVenue != address(0), "BRIDGE_VENUE_ADDRESS not set");
+        require(yieldVenue != address(0), "YIELD_VENUE_ADDRESS not set");
+
         vm.startBroadcast(pk);
         (SolventVault vault,, uint256 agentId) =
             SolventDeployLib.deploy(identityRegistry, "ipfs://solvent-agent", asset, deployer, deployer, p);
@@ -57,8 +65,8 @@ contract Deploy is Script {
         vault.setYieldVenue(yieldVenue);
         vm.stopBroadcast();
 
-        // forge prints these; capture for the dashboard + submission.
-        // vault, vault.attestation(), agentId
-        agentId; // silence unused in some compiler settings
+        console2.log("SolventVault:", address(vault));
+        console2.log("SolventAttestation:", address(vault.attestation()));
+        console2.log("agentId:", agentId);
     }
 }
