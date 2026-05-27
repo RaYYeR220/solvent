@@ -104,4 +104,19 @@ contract SolventVaultTest is Test {
         vm.expectRevert(SolventVault.ZeroAddress.selector);
         new SolventVault(address(usdy), owner, agent, 42, address(0), _basePolicy());
     }
+
+    function test_constructorRejectsZeroSafeAsset() public {
+        Policy memory p = _basePolicy();
+        p.safeAsset = address(0);
+        vm.expectRevert(SolventVault.ZeroAddress.selector);
+        new SolventVault(address(usdy), owner, agent, 42, address(att), p);
+    }
+
+    function test_setPolicyRejectsZeroSafeAsset() public {
+        Policy memory p = _basePolicy();
+        p.safeAsset = address(0);
+        vm.prank(owner);
+        vm.expectRevert(SolventVault.ZeroAddress.selector);
+        vault.setPolicy(p);
+    }
 }

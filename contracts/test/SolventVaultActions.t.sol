@@ -156,6 +156,24 @@ contract SolventVaultSwapTest is Test {
         vm.prank(owner);
         vault.setDexRouter(address(0));
     }
+
+    function test_ownerWithdrawsSafeAssetAfterSwap() public {
+        vm.prank(agent);
+        vault.executeProtectiveAction(
+            ActionType.SWAP_TO_SAFE, _swapParams(100e18, 98e6),
+            Regime.EARLY_DEPEG, bytes32("x"), bytes32(0)
+        );
+        // vault now holds 100e6 USDC (the safe asset); owner must be able to retrieve it
+        vm.prank(owner);
+        vault.withdrawToken(address(usdc), 100e6);
+        assertEq(usdc.balanceOf(owner), 100e6);
+        assertEq(usdc.balanceOf(address(vault)), 0);
+    }
+
+    function test_strangerCannotWithdrawToken() public {
+        vm.expectRevert(SolventVault.NotOwner.selector);
+        vault.withdrawToken(address(usdc), 1);
+    }
 }
 
 contract SolventVaultBridgeTest is Test {

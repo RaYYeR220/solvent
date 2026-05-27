@@ -5,6 +5,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import {Policy, ActionType, Regime, PolicyLib} from "./Policy.sol"; // ActionType, Regime, PolicyLib used in Tasks 6-8
 import {SolventAttestation} from "./SolventAttestation.sol";
 import {IDexRouter} from "./interfaces/IDexRouter.sol";
@@ -16,6 +17,7 @@ import {ILendingVenue} from "./interfaces/ILendingVenue.sol";
 contract SolventVault is ReentrancyGuard {
     using SafeERC20 for IERC20;
     using PolicyLib for Policy;
+    using SafeCast for uint256;
 
     IERC20 public immutable asset;
     uint256 public immutable agentId;
@@ -42,6 +44,7 @@ contract SolventVault is ReentrancyGuard {
     event KillSwitchSet(bool active);
     event Deposited(uint256 amount);
     event Withdrawn(uint256 amount);
+    event WithdrawnToken(address indexed token, uint256 amount);
     event DexRouterChanged(address indexed router);
     event YieldVenueChanged(address indexed venue);
     event ProtectiveActionExecuted(ActionType indexed action, int256 outcome);
@@ -67,6 +70,7 @@ contract SolventVault is ReentrancyGuard {
         if (owner_ == address(0) || asset_ == address(0) || attestation_ == address(0)) {
             revert ZeroAddress();
         }
+        if (policy_.safeAsset == address(0)) revert ZeroAddress();
         asset = IERC20(asset_);
         owner = owner_;
         agent = agent_;
@@ -77,7 +81,7 @@ contract SolventVault is ReentrancyGuard {
 
     // --- owner surface ---
 
-    function deposit(uint256 amount) external onlyOwner {
+    function deposit(uint256 amount) external onlyOwner nonReentrant {
         asset.safeTransferFrom(msg.sender, address(this), amount);
         emit Deposited(amount);
     }
@@ -87,6 +91,14 @@ contract SolventVault is ReentrancyGuard {
         emit Withdrawn(amount);
     }
 
+    /// @notice Owner can withdraw ANY token the vault holds (e.g. the safe asset
+    /// received after a protective swap/bridge). The "owner can always withdraw"
+    /// invariant covers all assets, not just the primary `asset`.
+    function withdrawToken(address token, uint256 amount) external onlyOwner nonReentrant {
+        IERC20(token).safeTransfer(msg.sender, amount);
+        emit WithdrawnToken(token, amount);
+    }
+
     /// @dev Pass address(0) to disable the agent role (no protective actions possible).
     function setAgent(address agent_) external onlyOwner {
         agent = agent_;
@@ -94,6 +106,7 @@ contract SolventVault is ReentrancyGuard {
     }
 
     function setPolicy(Policy calldata policy_) external onlyOwner {
+        if (policy_.safeAsset == address(0)) revert ZeroAddress();
         policy = policy_;
         emit PolicyChanged();
     }
@@ -170,7 +183,7 @@ contract SolventVault is ReentrancyGuard {
         dexRouter.swapExactTokensForTokens(amountIn, amountOutMin, path, address(this), block.timestamp);
         uint256 received = IERC20(policy.safeAsset).balanceOf(address(this)) - balBefore;
         IERC20(address(asset)).forceApprove(address(dexRouter), 0); // revoke any residual allowance
-        return int256(received);
+        return received.toInt256();
     }
 
     /// @dev Supplies `asset` collateral to the policy bridge venue and borrows
@@ -195,7 +208,7 @@ contract SolventVault is ReentrancyGuard {
         uint256 balBefore = IERC20(policy.safeAsset).balanceOf(address(this));
         venue.borrow(policy.safeAsset, borrowAmount, address(this));
         uint256 borrowed = IERC20(policy.safeAsset).balanceOf(address(this)) - balBefore;
-        return int256(borrowed);
+        return borrowed.toInt256();
     }
 
     /// @dev Repays safe-asset debt and withdraws collateral back into the vault.
@@ -209,8 +222,9 @@ contract SolventVault is ReentrancyGuard {
         venue.repay(policy.safeAsset, repayAmount, address(this));
         IERC20(policy.safeAsset).forceApprove(address(venue), 0); // revoke residual
 
-        uint256 actualWithdrawn = venue.withdraw(address(asset), withdrawAmount, address(this));
-        return int256(actualWithdrawn);
+        uint256 balBefore = asset.balanceOf(address(this));
+        venue.withdraw(address(asset), withdrawAmount, address(this));
+        return (asset.balanceOf(address(this)) - balBefore).toInt256();
     }
 
     /// @dev Parks idle capital by supplying `asset` to the configured yield
@@ -223,9 +237,11 @@ contract SolventVault is ReentrancyGuard {
         yieldVenue.supply(address(asset), amount, address(this));
         IERC20(address(asset)).forceApprove(address(yieldVenue), 0); // revoke residual
         uint256 supplied = balBefore - asset.balanceOf(address(this));
-        return int256(supplied);
+        return supplied.toInt256();
     }
 
+    /// @dev Intentionally NOT gated by the kill switch: observations are pure
+    /// logging and move no funds. Owner disables a misbehaving agent via setAgent.
     /// @notice Records a no-action observation (e.g. WATCH regime) to the
     /// attestation log without moving funds.
     function attestObservation(Regime regime, bytes32 reasonCode, bytes32 signalsHash)
