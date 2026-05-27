@@ -104,7 +104,7 @@ contract SolventVaultSwapTest is Test {
     }
 
     function test_swapBelowSlippageFloorReverts() public {
-        // floor = 100e18 * (10000-300)/10000 -> 97e6; ask for 96e6 -> reverts
+        // floor = (100e18 * (10000-300) * 10**6) / (10000 * 10**18) = 97e6; asking 96e6 reverts
         vm.expectRevert(SolventVault.SlippageFloorBreached.selector);
         vm.prank(agent);
         vault.executeProtectiveAction(
@@ -124,5 +124,35 @@ contract SolventVaultSwapTest is Test {
             ActionType.SWAP_TO_SAFE, abi.encode(uint256(100e18), uint256(98e6), path),
             Regime.EARLY_DEPEG, bytes32("x"), bytes32(0)
         );
+    }
+
+    function test_swapFromNonAssetReverts() public {
+        MockERC20 other = new MockERC20("OTHER", "OTH", 18);
+        address[] memory path = new address[](2);
+        path[0] = address(other); // not the vault asset
+        path[1] = address(usdc);
+        vm.expectRevert(SolventVault.BadSwapPath.selector);
+        vm.prank(agent);
+        vault.executeProtectiveAction(
+            ActionType.SWAP_TO_SAFE, abi.encode(uint256(100e18), uint256(98e6), path),
+            Regime.EARLY_DEPEG, bytes32("x"), bytes32(0)
+        );
+    }
+
+    function test_swapShortPathReverts() public {
+        address[] memory path = new address[](1);
+        path[0] = address(usdy);
+        vm.expectRevert(SolventVault.BadSwapPath.selector);
+        vm.prank(agent);
+        vault.executeProtectiveAction(
+            ActionType.SWAP_TO_SAFE, abi.encode(uint256(100e18), uint256(98e6), path),
+            Regime.EARLY_DEPEG, bytes32("x"), bytes32(0)
+        );
+    }
+
+    function test_setDexRouterRejectsZero() public {
+        vm.expectRevert(SolventVault.ZeroAddress.selector);
+        vm.prank(owner);
+        vault.setDexRouter(address(0));
     }
 }

@@ -100,6 +100,7 @@ contract SolventVault is ReentrancyGuard {
     }
 
     function setDexRouter(address router) external onlyOwner {
+        if (router == address(0)) revert ZeroAddress();
         dexRouter = IDexRouter(router);
         emit DexRouterChanged(router);
     }
@@ -128,9 +129,11 @@ contract SolventVault is ReentrancyGuard {
         attestation.record(agentId, regime, reasonCode, signalsHash, action, outcome);
     }
 
-    /// @dev Enforces: output token is the policy safe asset, and amountOutMin
-    /// is not below the policy slippage floor (assuming a 1:1 nominal peg
-    /// between asset and safe stable). Returns safe-asset units received.
+    /// @dev Enforces: the path starts at `asset` and ends at the policy safe
+    /// asset, and amountOutMin is not below the policy slippage floor (assuming a
+    /// 1:1 nominal peg between asset and safe stable). The off-chain agent is
+    /// expected to call with economically meaningful amounts; at dust amounts the
+    /// integer floor can round to zero. Returns safe-asset units received.
     function _swapToSafe(bytes calldata params) internal returns (int256) {
         (uint256 amountIn, uint256 amountOutMin, address[] memory path) =
             abi.decode(params, (uint256, uint256, address[]));
@@ -138,6 +141,7 @@ contract SolventVault is ReentrancyGuard {
         if (path.length < 2 || path[0] != address(asset) || path[path.length - 1] != policy.safeAsset) {
             revert BadSwapPath();
         }
+        if (address(dexRouter) == address(0)) revert ZeroAddress();
 
         uint8 ad = IERC20Metadata(address(asset)).decimals();
         uint8 sd = IERC20Metadata(policy.safeAsset).decimals();
@@ -146,8 +150,10 @@ contract SolventVault is ReentrancyGuard {
 
         IERC20(address(asset)).forceApprove(address(dexRouter), amountIn);
         uint256 balBefore = IERC20(policy.safeAsset).balanceOf(address(this));
+        // deadline == block.timestamp: the slippage floor (not the deadline) is the real guard here
         dexRouter.swapExactTokensForTokens(amountIn, amountOutMin, path, address(this), block.timestamp);
         uint256 received = IERC20(policy.safeAsset).balanceOf(address(this)) - balBefore;
+        IERC20(address(asset)).forceApprove(address(dexRouter), 0); // revoke any residual allowance
         return int256(received);
     }
 }
