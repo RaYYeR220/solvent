@@ -240,3 +240,67 @@ contract SolventVaultBridgeTest is Test {
         assertEq(outcome1, int256(200e18));
     }
 }
+
+contract SolventVaultParkTest is Test {
+    SolventVault vault;
+    SolventAttestation att;
+    MockERC20 usdy;
+    MockERC20 usdc;
+    MockLendingVenue yieldVenue;
+
+    address owner = address(0xA11CE);
+    address agent = address(0xA6E27);
+
+    function _policy() internal view returns (Policy memory p) {
+        p.safeAsset = address(usdc);
+        p.allowedActions = uint32(1) << uint8(ActionType.PARK_YIELD);
+    }
+
+    function setUp() public {
+        usdy = new MockERC20("USDY", "USDY", 18);
+        usdc = new MockERC20("USDC", "USDC", 6);
+        yieldVenue = new MockLendingVenue();
+        att = new SolventAttestation();
+
+        vm.prank(owner);
+        vault = new SolventVault(address(usdy), owner, agent, 42, address(att), _policy());
+        vm.prank(owner);
+        vault.setYieldVenue(address(yieldVenue));
+
+        usdy.mint(owner, 1_000e18);
+        vm.startPrank(owner);
+        usdy.approve(address(vault), 1_000e18);
+        vault.deposit(1_000e18);
+        vm.stopPrank();
+    }
+
+    function test_parkYieldSuppliesToYieldVenue() public {
+        vm.prank(agent);
+        vault.executeProtectiveAction(
+            ActionType.PARK_YIELD, abi.encode(uint256(300e18)),
+            Regime.CALM, bytes32("park"), keccak256("sig")
+        );
+        assertEq(yieldVenue.supplied(address(vault), address(usdy)), 300e18);
+        assertEq(att.decisionCount(address(vault)), 1);
+    }
+
+    function test_observationAttestsWithoutMovingFunds() public {
+        vm.prank(agent);
+        vault.attestObservation(Regime.WATCH, bytes32("watch"), keccak256("sig"));
+        assertEq(usdy.balanceOf(address(vault)), 1_000e18); // untouched
+        (,, Regime regime,,, ActionType action,) = att.decisionAt(address(vault), 0);
+        assertEq(uint8(regime), uint8(Regime.WATCH));
+        assertEq(uint8(action), uint8(ActionType.NONE));
+    }
+
+    function test_strangerCannotAttestObservation() public {
+        vm.expectRevert(SolventVault.NotAgent.selector);
+        vault.attestObservation(Regime.WATCH, bytes32("x"), bytes32(0));
+    }
+
+    function test_setYieldVenueRejectsZero() public {
+        vm.expectRevert(SolventVault.ZeroAddress.selector);
+        vm.prank(owner);
+        vault.setYieldVenue(address(0));
+    }
+}

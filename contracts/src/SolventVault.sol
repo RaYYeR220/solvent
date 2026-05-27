@@ -26,6 +26,7 @@ contract SolventVault is ReentrancyGuard {
     bool public killSwitch;
     Policy public policy;
     IDexRouter public dexRouter;
+    ILendingVenue public yieldVenue;
 
     error NotOwner();
     error NotAgent();
@@ -42,6 +43,7 @@ contract SolventVault is ReentrancyGuard {
     event Deposited(uint256 amount);
     event Withdrawn(uint256 amount);
     event DexRouterChanged(address indexed router);
+    event YieldVenueChanged(address indexed venue);
     event ProtectiveActionExecuted(ActionType indexed action, int256 outcome);
 
     modifier onlyOwner() {
@@ -107,6 +109,12 @@ contract SolventVault is ReentrancyGuard {
         emit DexRouterChanged(router);
     }
 
+    function setYieldVenue(address venue) external onlyOwner {
+        if (venue == address(0)) revert ZeroAddress();
+        yieldVenue = ILendingVenue(venue);
+        emit YieldVenueChanged(venue);
+    }
+
     // --- agent surface ---
 
     function executeProtectiveAction(
@@ -126,6 +134,8 @@ contract SolventVault is ReentrancyGuard {
             outcome = _bridgeViaLending(params);
         } else if (action == ActionType.UNWIND_BRIDGE) {
             outcome = _unwindBridge(params);
+        } else if (action == ActionType.PARK_YIELD) {
+            outcome = _parkYield(params);
         } else {
             // Other actions are wired up in later tasks.
             revert ActionNotAllowed(action);
@@ -201,5 +211,27 @@ contract SolventVault is ReentrancyGuard {
 
         uint256 actualWithdrawn = venue.withdraw(address(asset), withdrawAmount, address(this));
         return int256(actualWithdrawn);
+    }
+
+    /// @dev Parks idle capital by supplying `asset` to the configured yield
+    /// venue. Returns the asset units actually supplied.
+    function _parkYield(bytes calldata params) internal returns (int256) {
+        uint256 amount = abi.decode(params, (uint256));
+        if (address(yieldVenue) == address(0)) revert ZeroAddress();
+        uint256 balBefore = asset.balanceOf(address(this));
+        IERC20(address(asset)).forceApprove(address(yieldVenue), amount);
+        yieldVenue.supply(address(asset), amount, address(this));
+        IERC20(address(asset)).forceApprove(address(yieldVenue), 0); // revoke residual
+        uint256 supplied = balBefore - asset.balanceOf(address(this));
+        return int256(supplied);
+    }
+
+    /// @notice Records a no-action observation (e.g. WATCH regime) to the
+    /// attestation log without moving funds.
+    function attestObservation(Regime regime, bytes32 reasonCode, bytes32 signalsHash)
+        external
+        onlyAgent
+    {
+        attestation.record(agentId, regime, reasonCode, signalsHash, ActionType.NONE, 0);
     }
 }
