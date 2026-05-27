@@ -3,9 +3,11 @@ pragma solidity 0.8.24;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Policy, ActionType, Regime, PolicyLib} from "./Policy.sol"; // ActionType, Regime, PolicyLib used in Tasks 6-8
 import {SolventAttestation} from "./SolventAttestation.sol";
+import {IDexRouter} from "./interfaces/IDexRouter.sol";
 
 /// @notice Custody + on-chain policy enforcement. The agent may only execute
 /// pre-approved protective actions; it can never withdraw to an arbitrary
@@ -22,18 +24,23 @@ contract SolventVault is ReentrancyGuard {
     address public agent;
     bool public killSwitch;
     Policy public policy;
+    IDexRouter public dexRouter;
 
     error NotOwner();
     error NotAgent();
     error Killed();
     error ActionNotAllowed(ActionType action);
     error ZeroAddress();
+    error SlippageFloorBreached();
+    error BadSwapPath();
 
     event AgentChanged(address indexed agent);
     event PolicyChanged();
     event KillSwitchSet(bool active);
     event Deposited(uint256 amount);
     event Withdrawn(uint256 amount);
+    event DexRouterChanged(address indexed router);
+    event ProtectiveActionExecuted(ActionType indexed action, int256 outcome);
 
     modifier onlyOwner() {
         if (msg.sender != owner) revert NotOwner();
@@ -90,5 +97,57 @@ contract SolventVault is ReentrancyGuard {
     function setKillSwitch(bool active) external onlyOwner {
         killSwitch = active;
         emit KillSwitchSet(active);
+    }
+
+    function setDexRouter(address router) external onlyOwner {
+        dexRouter = IDexRouter(router);
+        emit DexRouterChanged(router);
+    }
+
+    // --- agent surface ---
+
+    function executeProtectiveAction(
+        ActionType action,
+        bytes calldata params,
+        Regime regime,
+        bytes32 reasonCode,
+        bytes32 signalsHash
+    ) external onlyAgent nonReentrant {
+        if (killSwitch) revert Killed();
+        if (!policy.isActionAllowed(action)) revert ActionNotAllowed(action);
+
+        int256 outcome;
+        if (action == ActionType.SWAP_TO_SAFE) {
+            outcome = _swapToSafe(params);
+        } else {
+            // Other actions are wired up in later tasks.
+            revert ActionNotAllowed(action);
+        }
+
+        emit ProtectiveActionExecuted(action, outcome);
+        attestation.record(agentId, regime, reasonCode, signalsHash, action, outcome);
+    }
+
+    /// @dev Enforces: output token is the policy safe asset, and amountOutMin
+    /// is not below the policy slippage floor (assuming a 1:1 nominal peg
+    /// between asset and safe stable). Returns safe-asset units received.
+    function _swapToSafe(bytes calldata params) internal returns (int256) {
+        (uint256 amountIn, uint256 amountOutMin, address[] memory path) =
+            abi.decode(params, (uint256, uint256, address[]));
+
+        if (path.length < 2 || path[0] != address(asset) || path[path.length - 1] != policy.safeAsset) {
+            revert BadSwapPath();
+        }
+
+        uint8 ad = IERC20Metadata(address(asset)).decimals();
+        uint8 sd = IERC20Metadata(policy.safeAsset).decimals();
+        uint256 floor = (amountIn * (10000 - policy.maxSlippageBps) * (10 ** sd)) / (10000 * (10 ** ad));
+        if (amountOutMin < floor) revert SlippageFloorBreached();
+
+        IERC20(address(asset)).forceApprove(address(dexRouter), amountIn);
+        uint256 balBefore = IERC20(policy.safeAsset).balanceOf(address(this));
+        dexRouter.swapExactTokensForTokens(amountIn, amountOutMin, path, address(this), block.timestamp);
+        uint256 received = IERC20(policy.safeAsset).balanceOf(address(this)) - balBefore;
+        return int256(received);
     }
 }
