@@ -8,6 +8,7 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol
 import {Policy, ActionType, Regime, PolicyLib} from "./Policy.sol"; // ActionType, Regime, PolicyLib used in Tasks 6-8
 import {SolventAttestation} from "./SolventAttestation.sol";
 import {IDexRouter} from "./interfaces/IDexRouter.sol";
+import {ILendingVenue} from "./interfaces/ILendingVenue.sol";
 
 /// @notice Custody + on-chain policy enforcement. The agent may only execute
 /// pre-approved protective actions; it can never withdraw to an arbitrary
@@ -33,6 +34,7 @@ contract SolventVault is ReentrancyGuard {
     error ZeroAddress();
     error SlippageFloorBreached();
     error BadSwapPath();
+    error BorrowExceedsMaxLTV();
 
     event AgentChanged(address indexed agent);
     event PolicyChanged();
@@ -120,6 +122,10 @@ contract SolventVault is ReentrancyGuard {
         int256 outcome;
         if (action == ActionType.SWAP_TO_SAFE) {
             outcome = _swapToSafe(params);
+        } else if (action == ActionType.BRIDGE_VIA_LENDING) {
+            outcome = _bridgeViaLending(params);
+        } else if (action == ActionType.UNWIND_BRIDGE) {
+            outcome = _unwindBridge(params);
         } else {
             // Other actions are wired up in later tasks.
             revert ActionNotAllowed(action);
@@ -155,5 +161,36 @@ contract SolventVault is ReentrancyGuard {
         uint256 received = IERC20(policy.safeAsset).balanceOf(address(this)) - balBefore;
         IERC20(address(asset)).forceApprove(address(dexRouter), 0); // revoke any residual allowance
         return int256(received);
+    }
+
+    /// @dev Supplies `asset` collateral to the policy bridge venue and borrows
+    /// the safe asset, capped at maxBridgeLTV (1:1 nominal peg assumption).
+    /// Returns safe-asset units borrowed.
+    function _bridgeViaLending(bytes calldata params) internal returns (int256) {
+        (uint256 collateralAmount, uint256 borrowAmount) = abi.decode(params, (uint256, uint256));
+        ILendingVenue venue = ILendingVenue(policy.bridgeVenue);
+
+        uint8 ad = IERC20Metadata(address(asset)).decimals();
+        uint8 sd = IERC20Metadata(policy.safeAsset).decimals();
+        uint256 maxBorrow =
+            (collateralAmount * policy.maxBridgeLTVBps * (10 ** sd)) / (10000 * (10 ** ad));
+        if (borrowAmount > maxBorrow) revert BorrowExceedsMaxLTV();
+
+        IERC20(address(asset)).forceApprove(address(venue), collateralAmount);
+        venue.supply(address(asset), collateralAmount, address(this));
+        venue.borrow(policy.safeAsset, borrowAmount, address(this));
+        return int256(borrowAmount);
+    }
+
+    /// @dev Repays safe-asset debt and withdraws collateral back into the vault.
+    /// Returns collateral units withdrawn (as a positive outcome).
+    function _unwindBridge(bytes calldata params) internal returns (int256) {
+        (uint256 repayAmount, uint256 withdrawAmount) = abi.decode(params, (uint256, uint256));
+        ILendingVenue venue = ILendingVenue(policy.bridgeVenue);
+
+        IERC20(policy.safeAsset).forceApprove(address(venue), repayAmount);
+        venue.repay(policy.safeAsset, repayAmount, address(this));
+        venue.withdraw(address(asset), withdrawAmount, address(this));
+        return int256(withdrawAmount);
     }
 }

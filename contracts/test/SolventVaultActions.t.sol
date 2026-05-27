@@ -7,6 +7,7 @@ import {Policy, ActionType, Regime} from "../src/Policy.sol";
 import {SolventAttestation} from "../src/SolventAttestation.sol";
 import {MockERC20} from "./mocks/MockERC20.sol";
 import {MockDexRouter} from "./mocks/MockDexRouter.sol";
+import {MockLendingVenue} from "./mocks/MockLendingVenue.sol";
 
 contract SolventVaultSwapTest is Test {
     SolventVault vault;
@@ -154,5 +155,84 @@ contract SolventVaultSwapTest is Test {
         vm.expectRevert(SolventVault.ZeroAddress.selector);
         vm.prank(owner);
         vault.setDexRouter(address(0));
+    }
+}
+
+contract SolventVaultBridgeTest is Test {
+    SolventVault vault;
+    SolventAttestation att;
+    MockERC20 usdy;
+    MockERC20 usdc;
+    MockLendingVenue venue;
+
+    address owner = address(0xA11CE);
+    address agent = address(0xA6E27);
+
+    function _policy() internal view returns (Policy memory p) {
+        p.safeAsset = address(usdc);
+        p.bridgeVenue = address(venue);
+        p.maxBridgeLTVBps = 5000; // 50%
+        p.allowedActions =
+            (uint32(1) << uint8(ActionType.BRIDGE_VIA_LENDING)) |
+            (uint32(1) << uint8(ActionType.UNWIND_BRIDGE));
+    }
+
+    function setUp() public {
+        usdy = new MockERC20("USDY", "USDY", 18);
+        usdc = new MockERC20("USDC", "USDC", 6);
+        venue = new MockLendingVenue();
+        att = new SolventAttestation();
+
+        vm.prank(owner);
+        vault = new SolventVault(address(usdy), owner, agent, 42, address(att), _policy());
+
+        usdy.mint(owner, 1_000e18);
+        usdc.mint(address(venue), 1_000_000e6); // borrowable liquidity
+        vm.startPrank(owner);
+        usdy.approve(address(vault), 1_000e18);
+        vault.deposit(1_000e18);
+        vm.stopPrank();
+    }
+
+    function test_bridgeSuppliesCollateralAndBorrowsSafe() public {
+        // supply 200 USDY, borrow 100 USDC (= 50% LTV, exactly at cap)
+        vm.prank(agent);
+        vault.executeProtectiveAction(
+            ActionType.BRIDGE_VIA_LENDING,
+            abi.encode(uint256(200e18), uint256(100e6)),
+            Regime.EARLY_DEPEG, bytes32("bridge"), keccak256("sig")
+        );
+        assertEq(venue.supplied(address(vault), address(usdy)), 200e18);
+        assertEq(usdc.balanceOf(address(vault)), 100e6);
+        assertEq(att.decisionCount(address(vault)), 1);
+    }
+
+    function test_bridgeBeyondMaxLTVReverts() public {
+        // borrow 101 USDC against 200 USDY -> > 50% -> revert
+        vm.expectRevert(SolventVault.BorrowExceedsMaxLTV.selector);
+        vm.prank(agent);
+        vault.executeProtectiveAction(
+            ActionType.BRIDGE_VIA_LENDING,
+            abi.encode(uint256(200e18), uint256(101e6)),
+            Regime.EARLY_DEPEG, bytes32("bridge"), bytes32(0)
+        );
+    }
+
+    function test_unwindRepaysAndWithdraws() public {
+        vm.prank(agent);
+        vault.executeProtectiveAction(
+            ActionType.BRIDGE_VIA_LENDING,
+            abi.encode(uint256(200e18), uint256(100e6)),
+            Regime.EARLY_DEPEG, bytes32("bridge"), bytes32(0)
+        );
+        vm.prank(agent);
+        vault.executeProtectiveAction(
+            ActionType.UNWIND_BRIDGE,
+            abi.encode(uint256(100e6), uint256(200e18)),
+            Regime.CALM, bytes32("unwind"), bytes32(0)
+        );
+        assertEq(venue.supplied(address(vault), address(usdy)), 0);
+        assertEq(venue.borrowed(address(vault), address(usdc)), 0);
+        assertEq(usdy.balanceOf(address(vault)), 1_000e18); // collateral back
     }
 }
