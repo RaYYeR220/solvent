@@ -234,5 +234,9 @@ contract SolventVaultBridgeTest is Test {
         assertEq(venue.supplied(address(vault), address(usdy)), 0);
         assertEq(venue.borrowed(address(vault), address(usdc)), 0);
         assertEq(usdy.balanceOf(address(vault)), 1_000e18); // collateral back
+        assertEq(att.decisionCount(address(vault)), 2);
+        (, , , , , ActionType action1, int256 outcome1) = att.decisionAt(address(vault), 1);
+        assertEq(uint8(action1), uint8(ActionType.UNWIND_BRIDGE));
+        assertEq(outcome1, int256(200e18));
     }
 }

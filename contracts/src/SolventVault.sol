@@ -164,10 +164,12 @@ contract SolventVault is ReentrancyGuard {
     }
 
     /// @dev Supplies `asset` collateral to the policy bridge venue and borrows
-    /// the safe asset, capped at maxBridgeLTV (1:1 nominal peg assumption).
-    /// Returns safe-asset units borrowed.
+    /// the safe asset, capped at maxBridgeLTV. NOTE: the LTV cap is NOMINAL
+    /// (assumes a 1:1 collateral/safe-asset peg), not mark-to-market. Returns
+    /// safe-asset units actually borrowed.
     function _bridgeViaLending(bytes calldata params) internal returns (int256) {
         (uint256 collateralAmount, uint256 borrowAmount) = abi.decode(params, (uint256, uint256));
+        if (policy.bridgeVenue == address(0)) revert ZeroAddress();
         ILendingVenue venue = ILendingVenue(policy.bridgeVenue);
 
         uint8 ad = IERC20Metadata(address(asset)).decimals();
@@ -178,19 +180,26 @@ contract SolventVault is ReentrancyGuard {
 
         IERC20(address(asset)).forceApprove(address(venue), collateralAmount);
         venue.supply(address(asset), collateralAmount, address(this));
+        IERC20(address(asset)).forceApprove(address(venue), 0); // revoke residual
+
+        uint256 balBefore = IERC20(policy.safeAsset).balanceOf(address(this));
         venue.borrow(policy.safeAsset, borrowAmount, address(this));
-        return int256(borrowAmount);
+        uint256 borrowed = IERC20(policy.safeAsset).balanceOf(address(this)) - balBefore;
+        return int256(borrowed);
     }
 
     /// @dev Repays safe-asset debt and withdraws collateral back into the vault.
-    /// Returns collateral units withdrawn (as a positive outcome).
+    /// Returns collateral units actually withdrawn.
     function _unwindBridge(bytes calldata params) internal returns (int256) {
         (uint256 repayAmount, uint256 withdrawAmount) = abi.decode(params, (uint256, uint256));
+        if (policy.bridgeVenue == address(0)) revert ZeroAddress();
         ILendingVenue venue = ILendingVenue(policy.bridgeVenue);
 
         IERC20(policy.safeAsset).forceApprove(address(venue), repayAmount);
         venue.repay(policy.safeAsset, repayAmount, address(this));
-        venue.withdraw(address(asset), withdrawAmount, address(this));
-        return int256(withdrawAmount);
+        IERC20(policy.safeAsset).forceApprove(address(venue), 0); // revoke residual
+
+        uint256 actualWithdrawn = venue.withdraw(address(asset), withdrawAmount, address(this));
+        return int256(actualWithdrawn);
     }
 }
