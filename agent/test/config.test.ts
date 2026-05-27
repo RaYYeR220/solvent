@@ -41,4 +41,13 @@ describe("loadConfig", () => {
   it("throws on a malformed address", () => {
     expect(() => loadConfig({ ...env, VAULT_ADDRESS: "nope" })).toThrowError(/VAULT_ADDRESS/);
   });
+
+  it("throws a clear, key-named error on a malformed LIQUIDITY_FLOOR", () => {
+    expect(() => loadConfig({ ...env, LIQUIDITY_FLOOR: "abc" })).toThrowError(/LIQUIDITY_FLOOR/);
+  });
+
+  it("throws on a non-positive POLL_INTERVAL_MS", () => {
+    expect(() => loadConfig({ ...env, POLL_INTERVAL_MS: "0" })).toThrowError(/POLL_INTERVAL_MS/);
+    expect(() => loadConfig({ ...env, POLL_INTERVAL_MS: "-1" })).toThrowError(/POLL_INTERVAL_MS/);
+  });
 });

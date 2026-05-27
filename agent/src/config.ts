@@ -31,6 +31,21 @@ function reqInt(env: Env, key: string): number {
   return n;
 }
 
+function reqBigInt(env: Env, key: string): bigint {
+  const v = req(env, key);
+  try {
+    return BigInt(v);
+  } catch {
+    throw new Error(`Invalid integer for ${key}: ${v}`);
+  }
+}
+
+function reqPositiveInt(env: Env, key: string): number {
+  const n = reqInt(env, key);
+  if (n <= 0) throw new Error(`Expected positive integer for ${key}: ${n}`);
+  return n;
+}
+
 export function loadConfig(env: Env): Config {
   const pk = req(env, "AGENT_PRIVATE_KEY");
   if (!/^0x[0-9a-fA-F]{64}$/.test(pk)) throw new Error("Invalid AGENT_PRIVATE_KEY");
@@ -40,7 +55,7 @@ export function loadConfig(env: Env): Config {
     earlyDivergenceBps: reqInt(env, "EARLY_DIVERGENCE_BPS"),
     terminalDivergenceBps: reqInt(env, "TERMINAL_DIVERGENCE_BPS"),
     maxOracleDivergenceBps: reqInt(env, "MAX_ORACLE_DIVERGENCE_BPS"),
-    liquidityFloor: BigInt(req(env, "LIQUIDITY_FLOOR")),
+    liquidityFloor: reqBigInt(env, "LIQUIDITY_FLOOR"),
     maxSlippageBps: reqInt(env, "MAX_SLIPPAGE_BPS"),
     maxBridgeLTVBps: reqInt(env, "MAX_BRIDGE_LTV_BPS"),
     assetDecimals: reqInt(env, "ASSET_DECIMALS"),
@@ -54,7 +69,7 @@ export function loadConfig(env: Env): Config {
     vaultAddress: reqAddress(env, "VAULT_ADDRESS"),
     asset: reqAddress(env, "ASSET_ADDRESS"),
     safeAsset: reqAddress(env, "SAFE_ASSET_ADDRESS"),
-    pollIntervalMs: reqInt(env, "POLL_INTERVAL_MS"),
+    pollIntervalMs: reqPositiveInt(env, "POLL_INTERVAL_MS"),
     policy,
   };
 }
