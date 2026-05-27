@@ -82,4 +82,26 @@ contract SolventVaultTest is Test {
         vm.prank(agent);
         vault.withdraw(1e18);
     }
+
+    function test_strangerCannotWithdraw() public {
+        vm.prank(owner);
+        usdy.approve(address(vault), 100e18);
+        vm.prank(owner);
+        vault.deposit(100e18);
+
+        vm.expectRevert(SolventVault.NotOwner.selector);
+        vm.prank(stranger);
+        vault.withdraw(1e18);
+    }
+
+    function test_constructorRejectsZeroAddresses() public {
+        vm.expectRevert(SolventVault.ZeroAddress.selector);
+        new SolventVault(address(usdy), address(0), agent, 42, address(att), _basePolicy());
+
+        vm.expectRevert(SolventVault.ZeroAddress.selector);
+        new SolventVault(address(0), owner, agent, 42, address(att), _basePolicy());
+
+        vm.expectRevert(SolventVault.ZeroAddress.selector);
+        new SolventVault(address(usdy), owner, agent, 42, address(0), _basePolicy());
+    }
 }

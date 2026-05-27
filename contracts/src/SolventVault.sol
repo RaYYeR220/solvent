@@ -27,6 +27,7 @@ contract SolventVault is ReentrancyGuard {
     error NotAgent();
     error Killed();
     error ActionNotAllowed(ActionType action);
+    error ZeroAddress();
 
     event AgentChanged(address indexed agent);
     event PolicyChanged();
@@ -52,6 +53,9 @@ contract SolventVault is ReentrancyGuard {
         address attestation_,
         Policy memory policy_
     ) {
+        if (owner_ == address(0) || asset_ == address(0) || attestation_ == address(0)) {
+            revert ZeroAddress();
+        }
         asset = IERC20(asset_);
         owner = owner_;
         agent = agent_;
@@ -72,6 +76,7 @@ contract SolventVault is ReentrancyGuard {
         emit Withdrawn(amount);
     }
 
+    /// @dev Pass address(0) to disable the agent role (no protective actions possible).
     function setAgent(address agent_) external onlyOwner {
         agent = agent_;
         emit AgentChanged(agent_);
