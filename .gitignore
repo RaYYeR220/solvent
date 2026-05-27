@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# foundry
+out/
+cache/
+broadcast/
+
+# next.js / build output
+.next/
+dist/
+build/
+
+# logs / os
+*.log
+.DS_Store
+
+# local tooling state (not part of the project)
+.remember/
+.claude/settings.local.json
