@@ -42,6 +42,21 @@ contract MocksTest is Test {
         assertEq(venue.borrowed(address(this), address(usdc)), 40e6);
     }
 
+    function test_dexRouterRevertsBelowAmountOutMin() public {
+        MockERC20 usdy = new MockERC20("USDY", "USDY", 18);
+        MockERC20 usdc = new MockERC20("USDC", "USDC", 6);
+        MockDexRouter router = new MockDexRouter();
+        usdy.mint(address(this), 100e18);
+        usdc.mint(address(router), 1_000e6);
+        usdy.approve(address(router), 100e18);
+        address[] memory path = new address[](2);
+        path[0] = address(usdy);
+        path[1] = address(usdc);
+        // 100e18 at 1:1 yields 100e6; demanding 101e6 must revert
+        vm.expectRevert(bytes("MockDexRouter: insufficient output"));
+        router.swapExactTokensForTokens(100e18, 101e6, path, address(this), block.timestamp);
+    }
+
     function test_identityRegistryReturnsIncrementingIds() public {
         MockIdentityRegistry reg = new MockIdentityRegistry();
         uint256 id1 = reg.register("ipfs://agent-uri");

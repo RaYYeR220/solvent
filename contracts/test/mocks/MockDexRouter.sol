@@ -32,8 +32,8 @@ contract MockDexRouter is IDexRouter {
 
         IERC20(tokenOut).transfer(to, out);
 
-        amounts = new uint256[](2);
+        amounts = new uint256[](path.length);
         amounts[0] = amountIn;
-        amounts[1] = out;
+        amounts[path.length - 1] = out;
     }
 }

@@ -14,6 +14,7 @@ contract MockLendingVenue is ILendingVenue {
         supplied[onBehalfOf][asset] += amount;
     }
 
+    /// @dev Aave-style: borrowed tokens go to msg.sender; onBehalfOf accrues the debt.
     function borrow(address asset, uint256 amount, address onBehalfOf) external {
         borrowed[onBehalfOf][asset] += amount;
         IERC20(asset).transfer(msg.sender, amount);
