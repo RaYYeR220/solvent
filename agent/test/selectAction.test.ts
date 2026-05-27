@@ -76,4 +76,15 @@ describe("selectAction", () => {
     expect(d.plan.action).toBe(ActionType.NONE);
     expect(d.reasonCode).toBe("protect-failed-illiquid");
   });
+  it("EARLY_DEPEG with zero balance -> NONE protect-failed-illiquid", () => {
+    const d = selectAction(Regime.EARLY_DEPEG, signals({ assetBalance: 0n, liquidityDepth: 100n * ONE }), policy(ALL));
+    expect(d.plan.action).toBe(ActionType.NONE);
+    expect(d.reasonCode).toBe("protect-failed-illiquid");
+  });
+  it("EARLY_DEPEG with dust balance (amounts round to 0) -> NONE protect-failed-dust", () => {
+    // 1000 wei of an 18-dec asset: minSafeOut/maxBorrow truncate to 0 at 6-dec safe asset
+    const d = selectAction(Regime.EARLY_DEPEG, signals({ assetBalance: 1000n, liquidityDepth: 10n ** 30n }), policy(ALL));
+    expect(d.plan.action).toBe(ActionType.NONE);
+    expect(d.reasonCode).toBe("protect-failed-dust");
+  });
 });

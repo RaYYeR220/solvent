@@ -33,28 +33,42 @@ export function selectAction(regime: Regime, s: Signals, p: AgentPolicy): Decisi
 
     case Regime.EARLY_DEPEG:
     case Regime.TERMINAL_DEPEG: {
+      const outMin = minSafeOut(s.assetBalance, p);
+      const borrow = maxBorrow(s.assetBalance, p);
+
+      // Full-exit only: partial fills are not modeled — if depth can't absorb the
+      // whole balance we fall through to bridge/protect-failed rather than dump a
+      // partial amount into a thin pool. outMin > 0 rejects dust too small to size.
       const canExit =
         s.assetBalance > 0n &&
         isActionAllowed(p, ActionType.SWAP_TO_SAFE) &&
-        s.liquidityDepth >= s.assetBalance;
+        s.liquidityDepth >= s.assetBalance &&
+        outMin > 0n;
       if (canExit) {
         return {
           regime,
-          plan: { action: ActionType.SWAP_TO_SAFE, amountIn: s.assetBalance, amountOutMin: minSafeOut(s.assetBalance, p) },
+          plan: { action: ActionType.SWAP_TO_SAFE, amountIn: s.assetBalance, amountOutMin: outMin },
           reasonCode: regime === Regime.TERMINAL_DEPEG ? "terminal-exit" : "early-exit",
         };
       }
-      if (regime === Regime.EARLY_DEPEG && s.assetBalance > 0n && isActionAllowed(p, ActionType.BRIDGE_VIA_LENDING)) {
+
+      // Transient (EARLY) depeg too illiquid to exit: bridge instead, if it sizes to a real borrow.
+      if (regime === Regime.EARLY_DEPEG && s.assetBalance > 0n && isActionAllowed(p, ActionType.BRIDGE_VIA_LENDING) && borrow > 0n) {
         return {
           regime,
-          plan: { action: ActionType.BRIDGE_VIA_LENDING, collateralAmount: s.assetBalance, borrowAmount: maxBorrow(s.assetBalance, p) },
+          plan: { action: ActionType.BRIDGE_VIA_LENDING, collateralAmount: s.assetBalance, borrowAmount: borrow },
           reasonCode: "liquidity-bridge",
         };
       }
-      return { regime, plan: { action: ActionType.NONE }, reasonCode: "protect-failed-illiquid" };
+
+      // Couldn't protect. Distinguish "amounts too small to act on" from genuine illiquidity.
+      const dust = s.assetBalance > 0n && outMin === 0n;
+      return { regime, plan: { action: ActionType.NONE }, reasonCode: dust ? "protect-failed-dust" : "protect-failed-illiquid" };
     }
 
-    default:
+    default: {
+      const _exhaustive: never = regime;
       return { regime, plan: { action: ActionType.NONE }, reasonCode: "unknown" };
+    }
   }
 }
