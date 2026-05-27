@@ -17,6 +17,9 @@ describe("computeSignalsHash", () => {
   it("changes when any signal changes", () => {
     expect(computeSignalsHash(base)).not.toBe(computeSignalsHash({ ...base, marketPrice: ONE - 1n }));
   });
+  it("changes when oracleDivergenceBps changes", () => {
+    expect(computeSignalsHash(base)).not.toBe(computeSignalsHash({ ...base, oracleDivergenceBps: 150 }));
+  });
 });
 
 describe("encodeReasonCode", () => {

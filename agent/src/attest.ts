@@ -4,8 +4,8 @@ import type { Signals } from "./types";
 /** Deterministic hash of the signal snapshot, recorded on-chain as evidence for a decision. */
 export function computeSignalsHash(s: Signals): `0x${string}` {
   const encoded = encodeAbiParameters(
-    [{ type: "uint256" }, { type: "uint256" }, { type: "uint256" }, { type: "uint256" }, { type: "uint64" }],
-    [s.navPrice, s.marketPrice, s.liquidityDepth, s.assetBalance, BigInt(s.timestamp)],
+    [{ type: "uint256" }, { type: "uint256" }, { type: "uint256" }, { type: "uint256" }, { type: "uint64" }, { type: "uint32" }],
+    [s.navPrice, s.marketPrice, s.liquidityDepth, s.assetBalance, BigInt(s.timestamp), s.oracleDivergenceBps],
   );
   return keccak256(encoded);
 }
