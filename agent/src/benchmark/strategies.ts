@@ -1,8 +1,7 @@
 import { assessRegime } from "../engine/assessRegime";
 import { selectAction } from "../engine/selectAction";
-import { ActionType, Regime, divergenceBps, type Decision } from "../types";
+import { ActionType, Regime, divergenceBps, type AgentPolicy, type Decision, type Signals } from "../types";
 import type { Portfolio, ScenarioTick, Strategy } from "./types";
-import type { AgentPolicy, Signals } from "../types";
 
 function signalsFrom(tick: ScenarioTick, portfolio: Portfolio): Signals {
   return { ...tick, assetBalance: portfolio.assetBalance };
