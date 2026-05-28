@@ -26,7 +26,7 @@ export default function HeroStat({ vault }: HeroStatProps) {
           textTransform: "uppercase",
         }}
       >
-        // protected_position
+        {`// protected_position`}
       </div>
       <div
         style={{
