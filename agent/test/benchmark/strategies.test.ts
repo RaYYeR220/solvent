@@ -38,6 +38,11 @@ describe("aiStrategy", () => {
     expect(d.plan.action).toBe(ActionType.BRIDGE_VIA_LENDING);
     expect(d.reasonCode).toBe("liquidity-bridge");
   });
+  it("TERMINAL + deep liquidity -> forced exit", () => {
+    const d = aiStrategy.decide(tick({ marketPrice: price(800), liquidityDepth: 10n ** 30n }), held(), policy()); // 2000 bps >= terminal
+    expect(d.plan.action).toBe(ActionType.SWAP_TO_SAFE);
+    expect(d.reasonCode).toBe("terminal-exit");
+  });
   it("bridged + re-peg (CALM) -> unwind", () => {
     const d = aiStrategy.decide(tick({ marketPrice: ONE }), bridgedP(), policy());
     expect(d.plan.action).toBe(ActionType.UNWIND_BRIDGE);
@@ -93,5 +98,14 @@ describe("createDelayedHuman", () => {
     const after = human.decide(tick({ marketPrice: price(340) }), p, policy());
     expect(after.plan.action).toBe(ActionType.NONE);
     expect(after.reasonCode).toBe("sold-out");
+  });
+  it("accumulates panic ticks across a calm tick (no reset) before selling", () => {
+    const human = createDelayedHuman({ panicDivergenceBps: 500, latencyTicks: 2 });
+    const p = held();
+    expect(human.decide(tick({ marketPrice: price(900) }), p, policy()).reasonCode).toBe("hold-and-hope"); // 1000 bps, count 1
+    expect(human.decide(tick({ marketPrice: price(990) }), p, policy()).reasonCode).toBe("hold-and-hope"); // 100 bps < 500, count stays 1 (no reset)
+    const sell = human.decide(tick({ marketPrice: price(880) }), p, policy()); // 1200 bps, count 2 -> sell
+    expect(sell.plan.action).toBe(ActionType.SWAP_TO_SAFE);
+    expect(sell.reasonCode).toBe("panic-sell");
   });
 });

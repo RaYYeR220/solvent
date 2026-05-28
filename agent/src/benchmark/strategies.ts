@@ -19,6 +19,8 @@ export const aiStrategy: Strategy = {
     const signals = signalsFrom(tick, portfolio);
     const regime = assessRegime(signals, policy);
 
+    // Unwind on a return to CALM/WATCH (re-peg). In this benchmark oracleDivergenceBps is
+    // always 0, so WATCH only signals a small price divergence, never feed mistrust.
     if (portfolio.bridged && (regime === Regime.CALM || regime === Regime.WATCH)) {
       return {
         regime,
