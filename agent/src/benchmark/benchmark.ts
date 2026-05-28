@@ -4,7 +4,8 @@ import { runScenario } from "./run";
 import { aiStrategy, hodlStrategy, createDelayedHuman } from "./strategies";
 import { transientScenario, terminalScenario } from "./scenarios";
 
-/** Fresh strategy set per scenario (delayed-human is stateful, so it must not be shared). */
+/** Fresh strategy set per scenario. aiStrategy/hodlStrategy are stateless singletons;
+ *  createDelayedHuman is stateful, so a new instance is required for each scenario. */
 function strategiesFor(): Strategy[] {
   return [aiStrategy, hodlStrategy, createDelayedHuman({ panicDivergenceBps: 500, latencyTicks: 2 })];
 }

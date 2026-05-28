@@ -26,17 +26,18 @@ describe("runBenchmark", () => {
 
   it("terminal: AI early-exits near par; human reacts late; HODL is wiped out", () => {
     const { ai, hodl, human } = pick(report, "terminal-collapse");
-    expect(ai.pctPreservedBps).toBeGreaterThanOrEqual(9000); // ~98.5%
-    expect(hodl.pctPreservedBps).toBeLessThanOrEqual(1500); // ~10%
-    expect(ai.finalValue).toBeGreaterThan(human.finalValue);
-    expect(human.finalValue).toBeGreaterThan(hodl.finalValue);
+    // Bound is tight enough to enforce "exited near par" (~98.5%), not just "exited somewhere in the slide".
+    expect(ai.pctPreservedBps).toBeGreaterThanOrEqual(9700);
+    expect(hodl.pctPreservedBps).toBeLessThanOrEqual(1100); // rides to ~$0.10 -> ~10%
+    expect(ai.finalValue).toBeGreaterThan(human.finalValue); // ai ~98.5% > human ~78%
+    expect(human.finalValue).toBeGreaterThan(hodl.finalValue); // human reacted late but still beat HODL
   });
 
   it("transient: AI matches the best-case HODL recovery while the human crystallizes the dip loss", () => {
     const { ai, hodl, human } = pick(report, "transient-depeg");
-    expect(ai.pctPreservedBps).toBeGreaterThanOrEqual(9900); // fully recovered
-    expect(ai.pctPreservedBps).toBeGreaterThanOrEqual(hodl.pctPreservedBps - 50); // within 0.5% of HODL
-    expect(ai.finalValue).toBeGreaterThan(human.finalValue); // human sold at the bottom
+    expect(ai.pctPreservedBps).toBeGreaterThanOrEqual(9900); // bridge round-trip is ~lossless -> ~par
+    expect(ai.pctPreservedBps).toBeGreaterThanOrEqual(hodl.pctPreservedBps); // never worse than just holding
+    expect(ai.finalValue).toBeGreaterThan(human.finalValue); // human sold into the dip (~91.5%)
   });
 
   it("AI uses the bridge on the transient (thin pool) and an exit on the terminal (deep pool early)", () => {
