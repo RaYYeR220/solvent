@@ -23,3 +23,6 @@ build/
 # local tooling state (not part of the project)
 .remember/
 .claude/settings.local.json
+
+# superpowers brainstorm sessions
+.superpowers/
