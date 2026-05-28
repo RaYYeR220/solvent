@@ -19,8 +19,8 @@ export function main(): void {
   const json = toScoreboardJson(report, Math.floor(Date.now() / 1000));
   writeFileSync("benchmark-report.json", json);
   for (const sc of report.scenarios) {
+    // pctPreservedBps is in basis points; /100 converts to percent.
     const summary = sc.results.map((r) => `${r.strategyName}=${(r.pctPreservedBps / 100).toFixed(1)}%`).join("  ");
-    // eslint-disable-next-line no-console
     console.log(`${sc.name}: ${summary}`);
   }
 }
