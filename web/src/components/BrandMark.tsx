@@ -4,7 +4,7 @@ interface BrandMarkProps {
 
 export default function BrandMark({ size = 32 }: BrandMarkProps) {
   return (
-    <svg viewBox="0 0 32 32" width={size} height={size} aria-label="Solvent">
+    <svg viewBox="0 0 32 32" width={size} height={size} role="img" aria-label="Solvent">
       <rect x="2" y="2" width="28" height="28" fill="none" stroke="var(--ink-cyan)" strokeWidth="1.4" />
       <circle cx="16" cy="16" r="7" fill="none" stroke="var(--ink-cyan)" strokeWidth="1.2" />
       <circle cx="16" cy="16" r="1.6" fill="var(--ink-cyan)" />

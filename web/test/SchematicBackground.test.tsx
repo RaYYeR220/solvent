@@ -22,4 +22,15 @@ describe("SchematicBackground", () => {
       expect((l as HTMLElement).style.pointerEvents).toBe("none");
     });
   });
+
+  it("anchors every layer to the frame with position:absolute, inset:0, zIndex:0", () => {
+    const { container } = render(<SchematicBackground />);
+    const layers = container.querySelectorAll('[data-layer]');
+    layers.forEach((l) => {
+      const el = l as HTMLElement;
+      expect(el.style.position).toBe("absolute");
+      expect(el.style.inset).toMatch(/^0(px)?$/);
+      expect(el.style.zIndex).toBe("0");
+    });
+  });
 });

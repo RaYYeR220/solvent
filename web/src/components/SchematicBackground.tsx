@@ -1,3 +1,7 @@
+"use client";
+
+import { useId } from "react";
+
 /**
  * Five decoration layers behind dashboard/frame content. All absolute-positioned
  * inside a positioned parent. Opacity caps per design spec §3: lines ≤ 0.10,
@@ -5,6 +9,8 @@
  * solid backgrounds — decoration is visible only in margins, gutters, hero-area.
  */
 export default function SchematicBackground() {
+  const baseId = useId().replace(/:/g, "");
+  const dotsPatternId = `${baseId}-dots`;
   return (
     <>
       {/* Atmospheric wash — three radial gradients */}
@@ -29,8 +35,8 @@ export default function SchematicBackground() {
           position: "absolute",
           inset: 0,
           backgroundImage:
-            "linear-gradient(rgba(124,213,255,.03) 1px, transparent 1px)," +
-            "linear-gradient(90deg, rgba(124,213,255,.03) 1px, transparent 1px)",
+            "linear-gradient(rgba(124,213,255,.025) 1px, transparent 1px)," +
+            "linear-gradient(90deg, rgba(124,213,255,.025) 1px, transparent 1px)",
           backgroundSize: "32px 32px",
           pointerEvents: "none",
           zIndex: 0,
@@ -43,12 +49,14 @@ export default function SchematicBackground() {
         style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0, opacity: 0.18 }}
         xmlns="http://www.w3.org/2000/svg"
       >
+        {/* Dots tile at cell centers (16,16 within a 32px tile) — matches canonical mockup.
+            Visually reads as a halftone sprinkle that doesn't overlap grid lines. */}
         <defs>
-          <pattern id="schematic-dots" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
+          <pattern id={dotsPatternId} x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
             <circle cx="16" cy="16" r="0.6" fill="rgba(124,213,255,.55)" />
           </pattern>
         </defs>
-        <rect width="100%" height="100%" fill="url(#schematic-dots)" />
+        <rect width="100%" height="100%" fill={`url(#${dotsPatternId})`} />
       </svg>
 
       {/* PCB traces (opacity 0.06 cap, NO component labels) */}
