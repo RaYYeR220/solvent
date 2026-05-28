@@ -21,4 +21,10 @@ describe("Panel", () => {
     const bg = root.style.background || root.style.backgroundColor;
     expect(bg).toMatch(/var\(--bg-panel\)|#0e1d3a/i);
   });
+
+  it("renders no title row when neither title nor meta is provided", () => {
+    const { container } = render(<Panel>x</Panel>);
+    // The .mono header div should not be present
+    expect(container.querySelector('.mono')).toBeNull();
+  });
 });

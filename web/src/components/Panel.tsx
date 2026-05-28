@@ -12,18 +12,19 @@ const cornerBase: CSSProperties = {
   width: 10,
   height: 10,
   opacity: 0.7,
+  pointerEvents: "none",
 };
 
 export default function Panel({ title, meta, children, style }: PanelProps) {
   return (
     <div
       style={{
+        ...style,
         border: "1px solid var(--border-cyan)",
         background: "var(--bg-panel)",
         padding: 18,
         position: "relative",
         borderRadius: 2,
-        ...style,
       }}
     >
       <span data-corner="tl" style={{ ...cornerBase, top: -2, left: -2, borderTop: "2px solid var(--ink-cyan)", borderLeft: "2px solid var(--ink-cyan)" }} />
