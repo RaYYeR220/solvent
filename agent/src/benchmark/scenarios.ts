@@ -28,10 +28,12 @@ export function benchmarkPolicy(): AgentPolicy {
   };
 }
 
-/** USDC March-2023 shape: par -> ~$0.915 -> full recovery, on a thin pool. The bridge is the hero. */
+// Inspired by the USDC March-2023 depeg. The real floor (~$0.88) would cross our terminal
+// threshold; we deliberately floor at $0.915 so the run stays in EARLY territory and exercises
+// the bridge path (the hero of a *transient* depeg) rather than the terminal stop-loss.
 export const transientScenario: Scenario = {
   name: "transient-depeg",
-  description: "USDC March 2023 shape: dip to ~$0.915 then full recovery; thin liquidity forces the bridge.",
+  description: "Transient depeg (inspired by USDC March 2023): dip to $0.915 then full recovery, on a thin pool that forces the bridge.",
   assetDecimals: 18,
   safeDecimals: 6,
   initialAssetBalance: INITIAL,
@@ -48,10 +50,10 @@ export const transientScenario: Scenario = {
   ],
 };
 
-/** UST shape: progressive collapse to ~$0.10, no recovery; liquidity present early then dries. */
+/** Terminal collapse inspired by UST: progressive slide to $0.10, no recovery; liquidity present early then dries. */
 export const terminalScenario: Scenario = {
   name: "terminal-collapse",
-  description: "UST shape: progressive collapse to ~$0.10, no recovery; liquidity present early then dries.",
+  description: "Terminal collapse (inspired by UST): progressive slide to $0.10, no recovery; liquidity present early then dries.",
   assetDecimals: 18,
   safeDecimals: 6,
   initialAssetBalance: INITIAL,

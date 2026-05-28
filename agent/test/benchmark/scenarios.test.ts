@@ -6,12 +6,19 @@ const ONE = 10n ** 18n;
 
 describe("benchmarkPolicy", () => {
   it("uses the balanced thresholds the scenarios are tuned against", () => {
-    const p = benchmarkPolicy();
-    expect(p.earlyDivergenceBps).toBe(50);
-    expect(p.terminalDivergenceBps).toBe(1000);
-    expect(p.maxBridgeLTVBps).toBe(5000);
-    expect(p.assetDecimals).toBe(18);
-    expect(p.safeDecimals).toBe(6);
+    // Full snapshot: the scenarios' expected outcomes depend on every field, so guard them all.
+    expect(benchmarkPolicy()).toEqual({
+      watchDivergenceBps: 25,
+      earlyDivergenceBps: 50,
+      terminalDivergenceBps: 1000,
+      maxOracleDivergenceBps: 500,
+      liquidityFloor: 0n,
+      maxSlippageBps: 300,
+      maxBridgeLTVBps: 5000,
+      assetDecimals: 18,
+      safeDecimals: 6,
+      allowedActions: (1 << 1) | (1 << 2) | (1 << 3) | (1 << 4),
+    });
   });
 });
 
