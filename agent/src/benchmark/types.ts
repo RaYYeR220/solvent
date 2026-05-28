@@ -17,7 +17,7 @@ export interface Scenario {
 export interface Portfolio {
   assetBalance: bigint; // free at-risk asset
   safeBalance: bigint; // safe-asset holdings
-  bridged: { collateral: bigint; debt: bigint } | null; // open lending bridge, if any
+  bridged: { collateral: bigint; debt: bigint } | null; // open lending bridge: collateral in asset-native, debt in safe-native units
 }
 
 export interface DecisionLogEntry {
@@ -33,7 +33,7 @@ export interface ScenarioResult {
   strategyName: string;
   initialValue: bigint; // safe-asset units, marked at the first tick
   finalValue: bigint; // safe-asset units, marked at the last tick
-  pctPreservedBps: number; // finalValue / initialValue, in bps (10000 = 100%)
+  pctPreservedBps: number; // finalValue / initialValue, in bps (10000 = 100%); can exceed 10000 or go negative for an insolvent outcome
   log: DecisionLogEntry[];
 }
 

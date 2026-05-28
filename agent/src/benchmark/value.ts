@@ -5,7 +5,11 @@ export function assetToSafe(assetAmount: bigint, price: bigint, assetDecimals: n
   return (assetAmount * price * 10n ** BigInt(safeDecimals)) / (10n ** 18n * 10n ** BigInt(assetDecimals));
 }
 
-/** Total portfolio value in safe-asset units, marked at the tick's market price. */
+/**
+ * Total portfolio value in safe-asset units, marked at the tick's spot **market** price
+ * (not NAV). Bridge equity (collateral value − debt) can be negative if the asset falls
+ * below the borrowed amount.
+ */
 export function markToMarket(p: Portfolio, tick: ScenarioTick, assetDecimals: number, safeDecimals: number): bigint {
   const free = assetToSafe(p.assetBalance, tick.marketPrice, assetDecimals, safeDecimals);
   const bridgeEquity = p.bridged
