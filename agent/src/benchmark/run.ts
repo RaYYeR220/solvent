@@ -12,7 +12,6 @@ export function runScenario(scenario: Scenario, strategy: Strategy, policy: Agen
   let portfolio: Portfolio = { assetBalance: scenario.initialAssetBalance, safeBalance: 0n, bridged: null };
   const initialValue = markToMarket(portfolio, firstTick, assetDecimals, safeDecimals);
   const log: DecisionLogEntry[] = [];
-  let lastTick = firstTick;
 
   for (const tick of scenario.ticks) {
     const decision = strategy.decide(tick, portfolio, policy);
@@ -24,10 +23,9 @@ export function runScenario(scenario: Scenario, strategy: Strategy, policy: Agen
       reasonCode: decision.reasonCode,
       valueAfter: markToMarket(portfolio, tick, assetDecimals, safeDecimals),
     });
-    lastTick = tick;
   }
 
-  const finalValue = markToMarket(portfolio, lastTick, assetDecimals, safeDecimals);
+  const finalValue = markToMarket(portfolio, scenario.ticks.at(-1)!, assetDecimals, safeDecimals);
   const pctPreservedBps = initialValue === 0n ? 0 : Number((finalValue * 10000n) / initialValue);
   return { scenarioName: scenario.name, strategyName: strategy.name, initialValue, finalValue, pctPreservedBps, log };
 }

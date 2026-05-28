@@ -52,6 +52,7 @@ describe("runScenario", () => {
     expect(r.finalValue).toBe(1000n * SAFE); // sold all at $1.00 on tick 0
     expect(r.pctPreservedBps).toBe(10000);
     expect(r.log[0]!.action).toBe(ActionType.SWAP_TO_SAFE);
+    expect(r.log[0]!.valueAfter).toBe(1000n * SAFE); // post-action: safe held, immune to the collapse
   });
 
   it("throws on an empty scenario", () => {
