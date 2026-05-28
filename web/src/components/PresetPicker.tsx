@@ -9,7 +9,7 @@ interface PresetPickerProps {
 
 export default function PresetPicker({ selected, onSelect }: PresetPickerProps) {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+    <div className="reflow-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
       {PRESETS.map((p) => {
         const isSelected = p.id === selected;
         return (

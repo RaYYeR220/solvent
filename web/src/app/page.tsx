@@ -33,6 +33,7 @@ export default async function LandingPage() {
           {`// depeg.guardian · track 3 · ai × rwa`}
         </div>
         <h1
+          className="reflow-hero"
           style={{
             fontSize: 64,
             fontWeight: 300,

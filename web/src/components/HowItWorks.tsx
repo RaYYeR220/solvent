@@ -36,7 +36,7 @@ export default function HowItWorks() {
       >
         {`// how_it_works`}
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
+      <div className="reflow-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
         {CARDS.map((c) => (
           <Panel key={c.step}>
             <div

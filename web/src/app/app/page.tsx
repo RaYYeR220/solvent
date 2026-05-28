@@ -75,7 +75,7 @@ export default function DashboardPage() {
       ) : (
         <>
           <HeroStat vault={vaultView} />
-          <div style={{ display: "grid", gridTemplateColumns: "60% 40%", gap: 14, marginBottom: 14 }}>
+          <div className="reflow-grid" style={{ display: "grid", gridTemplateColumns: "60% 40%", gap: 14, marginBottom: 14 }}>
             <ChartPanel vault={vaultView} />
             <PolicyPanel policy={policyView} />
           </div>

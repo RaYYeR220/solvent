@@ -36,3 +36,16 @@ a {
 .mono {
   font-family: var(--font-mono), ui-monospace, "SF Mono", Menlo, monospace;
 }
+
+/* Mobile reflow — collapse 2-col + 3-col grids to single-column under 760px. */
+@media (max-width: 760px) {
+  .reflow-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .reflow-hero {
+    font-size: 44px !important;
+  }
+  .reflow-padding {
+    padding: 16px !important;
+  }
+}
