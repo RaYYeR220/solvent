@@ -22,6 +22,11 @@ describe("applyAction", () => {
     expect(out).toEqual({ assetBalance: 0n, safeBalance: 985n * 10n ** 6n, bridged: null });
   });
 
+  it("SWAP_TO_SAFE on a partial amount leaves the remainder as free asset", () => {
+    const out = applyAction(held(), { action: ActionType.SWAP_TO_SAFE, amountIn: 400n * ONE, amountOutMin: 0n }, tick(985), 18, 6);
+    expect(out).toEqual({ assetBalance: 600n * ONE, safeBalance: 394n * 10n ** 6n, bridged: null });
+  });
+
   it("BRIDGE_VIA_LENDING moves asset to collateral and credits borrowed safe", () => {
     const out = applyAction(held(), { action: ActionType.BRIDGE_VIA_LENDING, collateralAmount: 1000n * ONE, borrowAmount: 500n * 10n ** 6n }, tick(915), 18, 6);
     expect(out).toEqual({ assetBalance: 0n, safeBalance: 500n * 10n ** 6n, bridged: { collateral: 1000n * ONE, debt: 500n * 10n ** 6n } });
