@@ -6,7 +6,8 @@
   "engines": { "node": ">=20" },
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "benchmark": "tsx src/benchmark/index.ts"
   },
   "dependencies": {
     "viem": "^2.21.0"
