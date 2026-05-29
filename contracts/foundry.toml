@@ -14,4 +14,6 @@ ffi = false
 mantle = "${MANTLE_RPC_URL}"
 
 [etherscan]
-mantle = { key = "${MANTLESCAN_API_KEY}", url = "https://api.mantlescan.xyz/api", chain = 5000 }
+# Etherscan API V2 multichain endpoint — one key works for Mantle + 60 other EVM chains.
+# Get key at https://etherscan.io/myaccount (free).
+mantle = { key = "${ETHERSCAN_API_KEY}", url = "https://api.etherscan.io/v2/api", chain = 5000 }

@@ -3,8 +3,7 @@
 ## Filed
 - Date: 2026-05-29 (Day 1 of Plan 5)
 - Contact: compliance@ondo.finance (and/or Ondo Discord #partner-integrations)
-- Requested vault address: <to be filled after Task 7 dry-run>
-
+- Requested vault address: 0x06513470e16a7d6071A12708c38a6fa0ED66469c
 ## Status
 - Pending (filed 2026-05-29)
 

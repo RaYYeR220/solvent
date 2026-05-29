@@ -1,0 +1,73 @@
+{
+  "chainId": 5000,
+  "network": "mantle",
+  "deployedAt": "2026-05-29",
+  "deployer": "0x3A3Bf4a0dFa88a040693F9718cEd65dA23f40798",
+  "deployBlock": 95950287,
+  "totalGasPaidMnt": "0.225203150004504063",
+  "addresses": {
+    "solventVault": "0x06513470e16a7d6071A12708c38a6fa0ED66469c",
+    "solventAttestation": "0x89D3F83B777b245A80baec60277B449B8E72B5D3",
+    "agniDexAdapter": "0x24090d62792930Aa34351B8b19850581D48628f9",
+    "initLendingAdapter": "0x783bC82FE4AFB635De351EEB0D09542D3B09C847",
+    "agentId": 106,
+    "riskAsset": "0x779Ded0c9e1022225f8E0630b35a9b54bE713736",
+    "safeAsset": "0x09Bc4E0D864854c6aFB6eB9A9cdF58aC190D0dF9",
+    "riskAssetSymbol": "USDT0",
+    "safeAssetSymbol": "USDC"
+  },
+  "txHashes": {
+    "registerIdentity": "0x250c665f0cd621125979a2a79fd45b7340aa12fef10f506666599318b9e15e44",
+    "solventAttestation": "0x81af7f376f9eee23137d17fd92d6fd894865b4fb6264f97b0cb3d76975c841f8",
+    "agniDexAdapter": "0x52faaf75bc5b03fb4bcd29348a1f135a9188fa519814125af7b907736956d537",
+    "initLendingAdapter": "0xeff53accae14a03d97f3d72b4ff7f937f7402fbec5547607fb4ed587abfc074b",
+    "solventVault": "0xb0e6f38a203bb8b67f6ecbcc123d2f15dfc1df7d78d0b5ad378a64323ca6a36c",
+    "setDexRouter": "0x29ffeff253385acdc3ff5121d31214c0c32ec8dbef20e00e4c3122efd1a69a65",
+    "setYieldVenue": "0x4a34374bc80a89cf7380d28f4d65e9cb946ed743cdbfaa6ffb989e6d98a8c902"
+  },
+  "mantlescanLinks": {
+    "solventVault": "https://mantlescan.xyz/address/0x06513470e16a7d6071A12708c38a6fa0ED66469c",
+    "solventAttestation": "https://mantlescan.xyz/address/0x89D3F83B777b245A80baec60277B449B8E72B5D3",
+    "agniDexAdapter": "https://mantlescan.xyz/address/0x24090d62792930Aa34351B8b19850581D48628f9",
+    "initLendingAdapter": "https://mantlescan.xyz/address/0x783bC82FE4AFB635De351EEB0D09542D3B09C847"
+  },
+  "wiring": {
+    "vault.asset": "USDT0 (0x779Ded0c9e1022225f8E0630b35a9b54bE713736)",
+    "vault.owner": "0x3A3Bf4a0dFa88a040693F9718cEd65dA23f40798 (deployer)",
+    "vault.agent": "0x3A3Bf4a0dFa88a040693F9718cEd65dA23f40798 (deployer; same as owner for v1)",
+    "vault.agentId": "106 (ERC-8004 Identity NFT tokenId)",
+    "vault.dexRouter": "AgniDexAdapter (0x24090d62792930Aa34351B8b19850581D48628f9)",
+    "vault.yieldVenue": "InitLendingAdapter (0x783bC82FE4AFB635De351EEB0D09542D3B09C847)",
+    "attestation.reputationRegistry": "ERC-8004 ReputationRegistry (0x8004BAa17C55a88189AE136b182e5fdA19dE9b63)",
+    "policy": {
+      "earlyDivergenceBps": 50,
+      "terminalDivergenceBps": 500,
+      "liquidityFloor": 0,
+      "maxSlippageBps": 300,
+      "safeAsset": "USDC",
+      "bridgeVenue": "InitLendingAdapter (0x783bC82FE4AFB635De351EEB0D09542D3B09C847)",
+      "maxBridgeLTVBps": 5000,
+      "allowedActions": "SWAP_TO_SAFE | BRIDGE_VIA_LENDING | UNWIND_BRIDGE | PARK_YIELD"
+    },
+    "agniDexAdapter": {
+      "swapRouter": "0x319B69888b0d11cEC22caA5034e25FfFBDc88421 (Agni V3)",
+      "quoter": "0xc4aaDc921E1cdb66c5300Bc158a313292923C0cb (Agni QuoterV2)",
+      "feeTier": 500
+    },
+    "initLendingAdapter": {
+      "core": "0x972BcB0284cca0152527c4f70f8F689852bCAFc5 (INIT Core)",
+      "riskPool": "0xAdA66a8722B5cDfe3bC504007a5d793e7100Ad09 (INIT USDT pool)",
+      "safePool": "0x00A55649e597D463fD212FBE48a3B40f0E227D06 (INIT USDC pool)"
+    }
+  },
+  "verification": {
+    "status": "pending — Mantlescan API moved to Etherscan API V2 (single multi-chain key)",
+    "etherscanV2Url": "https://api.etherscan.io/v2/api",
+    "etherscanV2GetKeyAt": "https://etherscan.io/myaccount"
+  },
+  "ondoAllowlist": {
+    "status": "pending — request filed 2026-05-29",
+    "requestedVaultAddress": "0x06513470e16a7d6071A12708c38a6fa0ED66469c",
+    "ifApproved": "redeploy with RISK_ASSET=0x5bE26527e817998A7206475496fDE1E68957c5A6 (USDY)"
+  }
+}
