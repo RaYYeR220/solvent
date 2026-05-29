@@ -1,10 +1,12 @@
 name: agent-tick
 on:
   schedule:
-    # Mantle-friendly cadence: every 5 minutes. GitHub Actions cron is best-effort
-    # — actual firing can drift several minutes under load. The agent is stateless
-    # so missed ticks are equivalent to a no-op.
-    - cron: "*/5 * * * *"
+    # Hourly cadence (24 ticks/day). Each tick costs ~0.023 MNT on Mantle
+    # (attestObservation + ERC-8004 mirror write); hourly stays within ~$0.40/day
+    # so 6 MNT lasts ~15 days. To pause entirely during dev: Actions tab →
+    # agent-tick → "Disable workflow" (workflow_dispatch still works for ad-hoc
+    # manual ticks). For demo day, can be bumped to `*/15 * * * *` short-term.
+    - cron: "0 * * * *"
   workflow_dispatch: {}
 
 concurrency:

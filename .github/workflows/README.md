@@ -1,7 +1,8 @@
 # Solvent agent-tick workflow
 
-Runs `agent/src/runtime/main.ts --once` every 5 minutes against Mantle mainnet,
-attesting to `SolventVault` (which dual-writes to ERC-8004 ReputationRegistry).
+Runs `agent/src/runtime/main.ts --once` on an hourly schedule against Mantle
+mainnet, attesting to `SolventVault` (which dual-writes to ERC-8004
+ReputationRegistry).
 
 ## Required GitHub Secrets
 
@@ -34,16 +35,57 @@ smoke-testing after secrets/vars changes.
 
 ## Cost
 
-- Native gas per tick (PARK_YIELD on a calm Mantle): ~0.001 MNT (~$0.01).
-- 5-minute cron over 10 days: ~2880 ticks → ~3 MNT (~$30) burn.
-- Fund the agent EOA accordingly; Plan 6 Task 1.8 sent 6 MNT as the budget.
+Per-tick (`attestObservation` + ERC-8004 mirror write):
+- ~470k gas × 50 gwei ≈ **0.0235 MNT (~$0.015)** at MNT ~$0.65.
+
+By cadence (rough daily burn out of agent EOA `0x8D8B...432c`):
+
+| `cron` | Ticks/day | Burn/day | 6 MNT lasts |
+|---|---|---|---|
+| `*/5` (5 min) | 288 | ~$4.5 | <1 day |
+| `*/15` (15 min) | 96 | ~$1.5 | ~4 days |
+| `*/30` (30 min) | 48 | ~$0.75 | ~8 days |
+| **`0 *` (hourly, default)** | **24** | **~$0.36** | **~16 days** |
+| `0 */2` (2h) | 12 | ~$0.18 | ~33 days |
+
+Plan 6 Task 1.8 sent 6 MNT to the agent EOA as the initial budget.
+
+## Operating cookbook
+
+**Dev / build phase (Plan 7):** keep the workflow **Disabled** between dev
+sessions — zero burn. Use **Run workflow** (manual `workflow_dispatch`) for
+ad-hoc smoke tests; that path is always available regardless of the
+scheduled-cron state.
+
+To disable: **Actions** tab → **agent-tick** → top-right "⋯" menu → **Disable
+workflow**. Re-enable from the same menu.
+
+**Pre-judging / demo day:** re-enable the workflow ~24–48h before judges look,
+optionally bump cron to `*/15` for a denser attestation stream. Top up the
+agent EOA with another 3–5 MNT if MNT balance < 2.
+
+To bump cadence temporarily: edit `cron: "0 * * * *"` → `cron: "*/15 * * * *"`
+in `.github/workflows/agent-tick.yml`, push to master. After demo day revert.
+
+To check agent balance:
+```
+cast balance 0x8D8BB77189a95eFF0D45EB08A75e35DcA8a1432c --rpc-url https://rpc.mantle.xyz --ether
+```
+
+To refuel:
+```
+cast send 0x8D8BB77189a95eFF0D45EB08A75e35DcA8a1432c --value 5ether \
+  --rpc-url https://rpc.mantle.xyz --private-key $DEPLOYER_PRIVATE_KEY
+```
 
 ## Failure modes
 
-- **Tick exits non-zero:** GitHub Actions marks the run failed; logs are
-  retained for 14 days. Inspect the artifact for the structured JSON error.
+- **Tick exits non-zero:** GitHub Actions marks the run failed (we use
+  `set -eo pipefail`); the `tick.log` artifact is uploaded regardless via
+  `if: always()`. Inspect the JSON error in the artifact; the next scheduled
+  cron starts clean.
 - **Cron drift:** GitHub Actions cron can drift up to several minutes under
-  load. Acceptable for our use case (5-min cadence on a 12s-block chain).
-- **Concurrent runs:** `concurrency.cancel-in-progress: false` ensures back-to-back
-  ticks don't race the agent EOA's nonce. If a tick takes >5 min, the next is
-  queued behind it.
+  load. Hourly cadence comfortably tolerates this.
+- **Concurrent runs:** `concurrency.cancel-in-progress: false` ensures
+  back-to-back ticks don't race the agent EOA's nonce. If a tick takes
+  >timeout-minutes, the next is queued behind it.
