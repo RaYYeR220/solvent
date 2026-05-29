@@ -13,6 +13,7 @@ export interface DecisionEntry {
   uri: string;
   payload: {
     tick?: number;
+    timestamp?: number;
     regime?: string;
     decision?: { action?: string; reasonCode?: string };
     signals?: Record<string, string>;
@@ -37,7 +38,7 @@ export function useDecisionLog(): DecisionLogLive {
     eventName: "NewFeedback",
     args: { agentId: CONTRACTS.agentId },
     onLogs(logs: Log[]) {
-      const decoded = logs.map((l: any) => ({
+      const decoded = logs.map((l: Log & { args?: { feedbackURI?: string } }) => ({
         blockNumber: l.blockNumber as bigint,
         txHash: l.transactionHash as string,
         uri: (l.args?.feedbackURI as string) ?? "",
@@ -66,6 +67,8 @@ export function useDecisionLog(): DecisionLogLive {
 
   const enriched: DecisionEntry[] = slots.map((e) => {
     const uri = e?.uri ?? "";
+    // Fixed-length slots (always 5) keep hook count stable across renders.
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     const q = useQuery({
       queryKey: ["attestation-payload", uri],
       queryFn: () => fetchAttestationJson(uri),
