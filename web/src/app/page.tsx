@@ -1,23 +1,15 @@
 import Link from "next/link";
-import { promises as fs } from "node:fs";
-import { join } from "node:path";
 import LandingFrame from "@/components/LandingFrame";
 import Header from "@/components/Header";
 import Scoreboard from "@/components/Scoreboard";
 import HowItWorks from "@/components/HowItWorks";
 import BenchmarkReplay from "@/components/BenchmarkReplay";
 import Footer from "@/components/Footer";
-import type { BenchmarkReport } from "@/lib/benchmark";
 import { headlineScores } from "@/lib/benchmark";
-
-async function loadReport(): Promise<BenchmarkReport> {
-  const path = join(process.cwd(), "public", "benchmark-report.json");
-  const raw = await fs.readFile(path, "utf8");
-  return JSON.parse(raw) as BenchmarkReport;
-}
+import { loadBenchmark } from "@/lib/benchmark.server";
 
 export default async function LandingPage() {
-  const report = await loadReport();
+  const report = await loadBenchmark();
   const scores = headlineScores(report, "terminal-collapse");
 
   return (

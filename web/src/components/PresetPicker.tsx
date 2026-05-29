@@ -16,7 +16,6 @@ export default function PresetPicker({ selected, onSelect }: PresetPickerProps) 
           <button
             key={p.id}
             type="button"
-            role="button"
             aria-pressed={isSelected}
             onClick={() => onSelect(p.id)}
             style={{

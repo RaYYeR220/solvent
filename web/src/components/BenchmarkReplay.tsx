@@ -5,11 +5,12 @@ import Panel from "./Panel";
 import { fetchBenchmark, type BenchmarkReport, type DecisionLogEntry } from "../lib/benchmark";
 
 const REASON_COLOUR: Record<string, string> = {
-  "park-calm": "var(--ink-cyan-bright)",
+  "park-calm": "var(--text-muted)",
+  "early-exit": "var(--ink-cyan)",
+  "secured": "var(--ink-cyan-bright)",
   "liquidity-bridge": "var(--ink-cyan)",
   "bridge-holding": "var(--text-strong)",
-  "swap-safe": "var(--ink-cyan)",
-  "remain-safe": "var(--text-strong)",
+  "unwind-repeg": "var(--ink-cyan-bright)",
   "observe": "var(--warm-gold)",
 };
 
