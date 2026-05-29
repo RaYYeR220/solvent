@@ -3,7 +3,7 @@ import LandingFrame from "@/components/LandingFrame";
 import Header from "@/components/Header";
 import Scoreboard from "@/components/Scoreboard";
 import HowItWorks from "@/components/HowItWorks";
-import BenchmarkReplay from "@/components/BenchmarkReplay";
+import ForkReplay from "@/components/ForkReplay";
 import Footer from "@/components/Footer";
 import { headlineScores } from "@/lib/benchmark";
 import { loadBenchmark } from "@/lib/benchmark.server";
@@ -76,7 +76,7 @@ export default async function LandingPage() {
 
       {/* BENCHMARK REPLAY */}
       <section id="replay" style={{ marginBottom: 56 }}>
-        <BenchmarkReplay />
+        <ForkReplay />
       </section>
 
       {/* HOW IT WORKS */}
