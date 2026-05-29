@@ -46,4 +46,12 @@ describe("AgniPriceSource", () => {
     expect(() => new AgniPriceSource({} as any, QUOTER, USDT0, USDC, 500, 19, 6))
       .toThrow(/assetDecimals must be in \[0, 18\], got 19/);
   });
+
+  it("falls back to nominal 1e18 when the quoter reverts (missing or empty pool)", async () => {
+    const c = {
+      simulateContract: vi.fn().mockRejectedValue(new Error("execution reverted")),
+    } as any;
+    const src = new AgniPriceSource(c, QUOTER, USDT0, USDC, 100, 6, 6);
+    await expect(src.getMarketPrice()).resolves.toBe(1_000_000_000_000_000_000n);
+  });
 });
