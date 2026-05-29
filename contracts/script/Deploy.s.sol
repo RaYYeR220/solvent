@@ -19,7 +19,7 @@ library SolventDeployLib {
         Policy memory policy
     ) internal returns (SolventVault vault, SolventAttestation attestation, uint256 agentId) {
         agentId = IIdentityRegistry(identityRegistry).register(agentURI);
-        attestation = new SolventAttestation();
+        attestation = new SolventAttestation(address(0));
         vault = new SolventVault(asset, owner, agent, agentId, address(attestation), policy);
     }
 }
