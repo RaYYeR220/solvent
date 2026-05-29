@@ -9,6 +9,7 @@ library MantleAddresses {
     address internal constant USDY = 0x5bE26527e817998A7206475496fDE1E68957c5A6;
     address internal constant MUSD = 0xab575258d37EaA5C8956EfABe71F4eE8F6397cF3;
     address internal constant USDT0 = 0x779Ded0c9e1022225f8E0630b35a9b54bE713736;
+    address internal constant USDT = 0x201EBa5CC46D216Ce6DC03F6a759e8E766e956aE;
     address internal constant USDC = 0x09Bc4E0D864854c6aFB6eB9A9cdF58aC190D0dF9;
     address internal constant AUSD = 0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a;
 
