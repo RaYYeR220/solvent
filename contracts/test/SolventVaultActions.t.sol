@@ -29,7 +29,7 @@ contract SolventVaultSwapTest is Test {
         usdy = new MockERC20("USDY", "USDY", 18);
         usdc = new MockERC20("USDC", "USDC", 6);
         router = new MockDexRouter();
-        att = new SolventAttestation();
+        att = new SolventAttestation(address(0));
 
         vm.prank(owner);
         vault = new SolventVault(address(usdy), owner, agent, 42, address(att), _policy());
@@ -64,11 +64,12 @@ contract SolventVaultSwapTest is Test {
             _swapParams(100e18, 98e6),
             Regime.EARLY_DEPEG,
             bytes32("early-exit"),
-            keccak256("signals")
+            keccak256("signals"),
+            ""
         );
         assertEq(usdc.balanceOf(address(vault)), 100e6); // 1:1 mock rate
         assertEq(att.decisionCount(address(vault)), 1);
-        (,, Regime regime,,, ActionType action, int256 outcome) = att.decisionAt(address(vault), 0);
+        (,, Regime regime,,, ActionType action, int256 outcome,) = att.decisionAt(address(vault), 0);
         assertEq(uint8(regime), uint8(Regime.EARLY_DEPEG));
         assertEq(uint8(action), uint8(ActionType.SWAP_TO_SAFE));
         assertEq(outcome, int256(100e6));
@@ -78,7 +79,7 @@ contract SolventVaultSwapTest is Test {
         vm.expectRevert(SolventVault.NotAgent.selector);
         vault.executeProtectiveAction(
             ActionType.SWAP_TO_SAFE, _swapParams(100e18, 98e6),
-            Regime.EARLY_DEPEG, bytes32("x"), bytes32(0)
+            Regime.EARLY_DEPEG, bytes32("x"), bytes32(0), ""
         );
     }
 
@@ -89,7 +90,7 @@ contract SolventVaultSwapTest is Test {
         );
         vm.prank(agent);
         vault.executeProtectiveAction(
-            ActionType.PARK_YIELD, "", Regime.CALM, bytes32("park"), bytes32(0)
+            ActionType.PARK_YIELD, "", Regime.CALM, bytes32("park"), bytes32(0), ""
         );
     }
 
@@ -100,7 +101,7 @@ contract SolventVaultSwapTest is Test {
         vm.prank(agent);
         vault.executeProtectiveAction(
             ActionType.SWAP_TO_SAFE, _swapParams(100e18, 98e6),
-            Regime.EARLY_DEPEG, bytes32("x"), bytes32(0)
+            Regime.EARLY_DEPEG, bytes32("x"), bytes32(0), ""
         );
     }
 
@@ -110,7 +111,7 @@ contract SolventVaultSwapTest is Test {
         vm.prank(agent);
         vault.executeProtectiveAction(
             ActionType.SWAP_TO_SAFE, _swapParams(100e18, 96e6),
-            Regime.EARLY_DEPEG, bytes32("x"), bytes32(0)
+            Regime.EARLY_DEPEG, bytes32("x"), bytes32(0), ""
         );
     }
 
@@ -123,7 +124,7 @@ contract SolventVaultSwapTest is Test {
         vm.prank(agent);
         vault.executeProtectiveAction(
             ActionType.SWAP_TO_SAFE, abi.encode(uint256(100e18), uint256(98e6), path),
-            Regime.EARLY_DEPEG, bytes32("x"), bytes32(0)
+            Regime.EARLY_DEPEG, bytes32("x"), bytes32(0), ""
         );
     }
 
@@ -136,7 +137,7 @@ contract SolventVaultSwapTest is Test {
         vm.prank(agent);
         vault.executeProtectiveAction(
             ActionType.SWAP_TO_SAFE, abi.encode(uint256(100e18), uint256(98e6), path),
-            Regime.EARLY_DEPEG, bytes32("x"), bytes32(0)
+            Regime.EARLY_DEPEG, bytes32("x"), bytes32(0), ""
         );
     }
 
@@ -147,7 +148,7 @@ contract SolventVaultSwapTest is Test {
         vm.prank(agent);
         vault.executeProtectiveAction(
             ActionType.SWAP_TO_SAFE, abi.encode(uint256(100e18), uint256(98e6), path),
-            Regime.EARLY_DEPEG, bytes32("x"), bytes32(0)
+            Regime.EARLY_DEPEG, bytes32("x"), bytes32(0), ""
         );
     }
 
@@ -161,7 +162,7 @@ contract SolventVaultSwapTest is Test {
         vm.prank(agent);
         vault.executeProtectiveAction(
             ActionType.SWAP_TO_SAFE, _swapParams(100e18, 98e6),
-            Regime.EARLY_DEPEG, bytes32("x"), bytes32(0)
+            Regime.EARLY_DEPEG, bytes32("x"), bytes32(0), ""
         );
         // vault now holds 100e6 USDC (the safe asset); owner must be able to retrieve it
         vm.prank(owner);
@@ -199,7 +200,7 @@ contract SolventVaultBridgeTest is Test {
         usdy = new MockERC20("USDY", "USDY", 18);
         usdc = new MockERC20("USDC", "USDC", 6);
         venue = new MockLendingVenue();
-        att = new SolventAttestation();
+        att = new SolventAttestation(address(0));
 
         vm.prank(owner);
         vault = new SolventVault(address(usdy), owner, agent, 42, address(att), _policy());
@@ -218,7 +219,7 @@ contract SolventVaultBridgeTest is Test {
         vault.executeProtectiveAction(
             ActionType.BRIDGE_VIA_LENDING,
             abi.encode(uint256(200e18), uint256(100e6)),
-            Regime.EARLY_DEPEG, bytes32("bridge"), keccak256("sig")
+            Regime.EARLY_DEPEG, bytes32("bridge"), keccak256("sig"), ""
         );
         assertEq(venue.supplied(address(vault), address(usdy)), 200e18);
         assertEq(usdc.balanceOf(address(vault)), 100e6);
@@ -232,7 +233,7 @@ contract SolventVaultBridgeTest is Test {
         vault.executeProtectiveAction(
             ActionType.BRIDGE_VIA_LENDING,
             abi.encode(uint256(200e18), uint256(101e6)),
-            Regime.EARLY_DEPEG, bytes32("bridge"), bytes32(0)
+            Regime.EARLY_DEPEG, bytes32("bridge"), bytes32(0), ""
         );
     }
 
@@ -241,19 +242,19 @@ contract SolventVaultBridgeTest is Test {
         vault.executeProtectiveAction(
             ActionType.BRIDGE_VIA_LENDING,
             abi.encode(uint256(200e18), uint256(100e6)),
-            Regime.EARLY_DEPEG, bytes32("bridge"), bytes32(0)
+            Regime.EARLY_DEPEG, bytes32("bridge"), bytes32(0), ""
         );
         vm.prank(agent);
         vault.executeProtectiveAction(
             ActionType.UNWIND_BRIDGE,
             abi.encode(uint256(100e6), uint256(200e18)),
-            Regime.CALM, bytes32("unwind"), bytes32(0)
+            Regime.CALM, bytes32("unwind"), bytes32(0), ""
         );
         assertEq(venue.supplied(address(vault), address(usdy)), 0);
         assertEq(venue.borrowed(address(vault), address(usdc)), 0);
         assertEq(usdy.balanceOf(address(vault)), 1_000e18); // collateral back
         assertEq(att.decisionCount(address(vault)), 2);
-        (, , , , , ActionType action1, int256 outcome1) = att.decisionAt(address(vault), 1);
+        (, , , , , ActionType action1, int256 outcome1,) = att.decisionAt(address(vault), 1);
         assertEq(uint8(action1), uint8(ActionType.UNWIND_BRIDGE));
         assertEq(outcome1, int256(200e18));
     }
@@ -278,7 +279,7 @@ contract SolventVaultParkTest is Test {
         usdy = new MockERC20("USDY", "USDY", 18);
         usdc = new MockERC20("USDC", "USDC", 6);
         yieldVenue = new MockLendingVenue();
-        att = new SolventAttestation();
+        att = new SolventAttestation(address(0));
 
         vm.prank(owner);
         vault = new SolventVault(address(usdy), owner, agent, 42, address(att), _policy());
@@ -296,7 +297,7 @@ contract SolventVaultParkTest is Test {
         vm.prank(agent);
         vault.executeProtectiveAction(
             ActionType.PARK_YIELD, abi.encode(uint256(300e18)),
-            Regime.CALM, bytes32("park"), keccak256("sig")
+            Regime.CALM, bytes32("park"), keccak256("sig"), ""
         );
         assertEq(yieldVenue.supplied(address(vault), address(usdy)), 300e18);
         assertEq(att.decisionCount(address(vault)), 1);
@@ -304,16 +305,16 @@ contract SolventVaultParkTest is Test {
 
     function test_observationAttestsWithoutMovingFunds() public {
         vm.prank(agent);
-        vault.attestObservation(Regime.WATCH, bytes32("watch"), keccak256("sig"));
+        vault.attestObservation(Regime.WATCH, bytes32("watch"), keccak256("sig"), "");
         assertEq(usdy.balanceOf(address(vault)), 1_000e18); // untouched
-        (,, Regime regime,,, ActionType action,) = att.decisionAt(address(vault), 0);
+        (,, Regime regime,,, ActionType action,,) = att.decisionAt(address(vault), 0);
         assertEq(uint8(regime), uint8(Regime.WATCH));
         assertEq(uint8(action), uint8(ActionType.NONE));
     }
 
     function test_strangerCannotAttestObservation() public {
         vm.expectRevert(SolventVault.NotAgent.selector);
-        vault.attestObservation(Regime.WATCH, bytes32("x"), bytes32(0));
+        vault.attestObservation(Regime.WATCH, bytes32("x"), bytes32(0), "");
     }
 
     function test_setYieldVenueRejectsZero() public {

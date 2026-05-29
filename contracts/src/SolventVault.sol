@@ -135,7 +135,8 @@ contract SolventVault is ReentrancyGuard {
         bytes calldata params,
         Regime regime,
         bytes32 reasonCode,
-        bytes32 signalsHash
+        bytes32 signalsHash,
+        string calldata uri
     ) external onlyAgent nonReentrant {
         if (killSwitch) revert Killed();
         if (!policy.isActionAllowed(action)) revert ActionNotAllowed(action);
@@ -155,7 +156,7 @@ contract SolventVault is ReentrancyGuard {
         }
 
         emit ProtectiveActionExecuted(action, outcome);
-        attestation.record(agentId, regime, reasonCode, signalsHash, action, outcome);
+        attestation.record(agentId, regime, reasonCode, signalsHash, action, outcome, uri);
     }
 
     /// @dev Enforces: the path starts at `asset` and ends at the policy safe
@@ -244,10 +245,10 @@ contract SolventVault is ReentrancyGuard {
     /// logging and move no funds. Owner disables a misbehaving agent via setAgent.
     /// @notice Records a no-action observation (e.g. WATCH regime) to the
     /// attestation log without moving funds.
-    function attestObservation(Regime regime, bytes32 reasonCode, bytes32 signalsHash)
+    function attestObservation(Regime regime, bytes32 reasonCode, bytes32 signalsHash, string calldata uri)
         external
         onlyAgent
     {
-        attestation.record(agentId, regime, reasonCode, signalsHash, ActionType.NONE, 0);
+        attestation.record(agentId, regime, reasonCode, signalsHash, ActionType.NONE, 0, uri);
     }
 }

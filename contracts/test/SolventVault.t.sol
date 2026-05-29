@@ -27,7 +27,7 @@ contract SolventVaultTest is Test {
     function setUp() public {
         usdy = new MockERC20("USDY", "USDY", 18);
         usdc = new MockERC20("USDC", "USDC", 6);
-        att = new SolventAttestation();
+        att = new SolventAttestation(address(0));
         vm.prank(owner);
         vault = new SolventVault(address(usdy), owner, agent, 42, address(att), _basePolicy());
         usdy.mint(owner, 1_000e18);
