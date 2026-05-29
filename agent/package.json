@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
@@ -12,6 +14,7 @@
     "forever": "tsx src/runtime/main.ts --forever"
   },
   "dependencies": {
+    "dotenv": "^17.4.2",
     "viem": "^2.21.0"
   },
   "devDependencies": {

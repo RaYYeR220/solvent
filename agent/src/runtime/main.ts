@@ -1,4 +1,7 @@
 #!/usr/bin/env tsx
+// Auto-load agent/.env for local smoke testing. No-op when the file is
+// missing (e.g. in CI, where the GH Actions workflow injects env directly).
+import "dotenv/config";
 import { fileURLToPath } from "node:url";
 import { loadConfig } from "../config";
 import { createReadClient, createWriteClient } from "../adapters/viemClients";
