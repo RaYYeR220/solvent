@@ -2,7 +2,7 @@
 
 Track 3 (AI × RWA) submission to the **Mantle Turing Test 2026** hackathon.
 
-**Live:** `<paste Vercel URL when available>`
+**Live:** https://solvent-three.vercel.app
 **Repo:** https://github.com/RaYYeR220/solvent
 
 ## What it does
@@ -82,7 +82,7 @@ on both transient recoveries and terminal collapses.
 
 | | |
 |---|---|
-| Dashboard | `<paste Vercel URL>` |
+| Dashboard | https://solvent-three.vercel.app |
 | Vault on MantleScan | https://mantlescan.xyz/address/0x06513470e16a7d6071A12708c38a6fa0ED66469c |
 | Attestation contract | https://mantlescan.xyz/address/0x89D3F83B777b245A80baec60277B449B8E72B5D3 |
 | Agent EOA (decision tx stream) | https://mantlescan.xyz/address/0x8D8BB77189a95eFF0D45EB08A75e35DcA8a1432c |

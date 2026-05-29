@@ -2,7 +2,7 @@
 
 **Audience:** hackathon judges
 **Total runtime:** 5 minutes
-**Live URL:** `<paste Vercel URL>`
+**Live URL:** https://solvent-three.vercel.app
 **Agent attestation stream:** https://mantlescan.xyz/address/0x8D8BB77189a95eFF0D45EB08A75e35DcA8a1432c
 
 ## 0:00–0:30 — Intro (30s)
