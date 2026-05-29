@@ -11,6 +11,9 @@ class FakeWriteClient implements WriteClient {
     this.calls.push(req);
     return "0xdeadbeef";
   }
+  async waitForTransactionReceipt(_req: { hash: `0x${string}` }) {
+    return { status: "success" as const, transactionHash: "0xdeadbeef" as `0x${string}` };
+  }
 }
 
 describe("createViemSender", () => {
@@ -20,6 +23,7 @@ describe("createViemSender", () => {
     const tx = await sender.executeProtectiveAction({
       action: ActionType.SWAP_TO_SAFE, params: "0x1234", regime: Regime.EARLY_DEPEG,
       reasonCode: ("0x" + "00".repeat(32)) as `0x${string}`, signalsHash: ("0x" + "11".repeat(32)) as `0x${string}`,
+      uri: "",
     });
     expect(tx).toBe("0xdeadbeef");
     expect(client.calls).toHaveLength(1);
@@ -27,7 +31,7 @@ describe("createViemSender", () => {
     expect(req.address).toBe(VAULT);
     expect(req.abi).toBe(vaultAbi);
     expect(req.functionName).toBe("executeProtectiveAction");
-    expect(req.args).toEqual([ActionType.SWAP_TO_SAFE, "0x1234", Regime.EARLY_DEPEG, ("0x" + "00".repeat(32)), ("0x" + "11".repeat(32))]);
+    expect(req.args).toEqual([ActionType.SWAP_TO_SAFE, "0x1234", Regime.EARLY_DEPEG, ("0x" + "00".repeat(32)), ("0x" + "11".repeat(32)), ""]);
   });
 
   it("calls writeContract with attestObservation args", async () => {
@@ -35,8 +39,9 @@ describe("createViemSender", () => {
     const sender = createViemSender(client, VAULT);
     await sender.attestObservation({
       regime: Regime.WATCH, reasonCode: ("0x" + "00".repeat(32)) as `0x${string}`, signalsHash: ("0x" + "11".repeat(32)) as `0x${string}`,
+      uri: "",
     });
     expect(client.calls[0].functionName).toBe("attestObservation");
-    expect(client.calls[0].args).toEqual([Regime.WATCH, ("0x" + "00".repeat(32)), ("0x" + "11".repeat(32))]);
+    expect(client.calls[0].args).toEqual([Regime.WATCH, ("0x" + "00".repeat(32)), ("0x" + "11".repeat(32)), ""]);
   });
 });
