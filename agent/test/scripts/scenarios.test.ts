@@ -8,10 +8,10 @@ describe("transientDepegScenario", () => {
   });
 
   it("dips to $0.96 at tick 3, recovers by tick 7", () => {
-    const t3 = transientDepegScenario.steps[3];
+    const t3 = transientDepegScenario.steps[3]!;
     expect(t3.oracleNav).toBe(1_000_000_000_000_000_000n);
     expect(t3.marketPrice).toBe(960_000_000_000_000_000n);
-    const t7 = transientDepegScenario.steps[7];
+    const t7 = transientDepegScenario.steps[7]!;
     expect(t7.marketPrice).toBe(1_000_000_000_000_000_000n);
   });
 });
@@ -23,9 +23,9 @@ describe("terminalCollapseScenario", () => {
   });
 
   it("collapses to $0.50 by tick 4 and stays there", () => {
-    const t4 = terminalCollapseScenario.steps[4];
+    const t4 = terminalCollapseScenario.steps[4]!;
     expect(t4.marketPrice).toBe(500_000_000_000_000_000n);
-    const t7 = terminalCollapseScenario.steps[7];
+    const t7 = terminalCollapseScenario.steps[7]!;
     expect(t7.marketPrice).toBe(500_000_000_000_000_000n);
   });
 });
