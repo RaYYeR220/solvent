@@ -39,9 +39,18 @@ async function main(): Promise<void> {
     ? new OndoNavSource(readClient, ONDO_ORACLE)
     : new ConstantNavSource(10n ** 18n);
 
+  // Agni V3 fee tier. USDT0/USDC pool on Mantle exists only at 100 (0.01%) —
+  // verified via AgniFactory.getPool. Pool is initialised but currently has
+  // zero liquidity, so AgniPriceSource falls back to nominal 1e18; if liquidity
+  // appears later, the agent picks up the real DEX signal automatically.
+  // (Note: AgniDexAdapter contract was deployed in Plan 5 with feeTier=500;
+  // this read-side mismatch is benign because AgniLiquiditySource is stubbed
+  // to 0 on live mainnet, so the on-chain swap path never fires.)
+  const FEE_TIER = 100;
+
   const price = new AgniPriceSource(
     readClient, QUOTER, cfg.asset, cfg.safeAsset,
-    500,
+    FEE_TIER,
     cfg.policy.assetDecimals, cfg.policy.safeDecimals,
   );
 
@@ -55,7 +64,7 @@ async function main(): Promise<void> {
   }
   const liquidity = new AgniLiquiditySource(
     readClient, QUOTER, cfg.asset, cfg.safeAsset,
-    500, cfg.policy.assetDecimals, cfg.policy.safeDecimals,
+    FEE_TIER, cfg.policy.assetDecimals, cfg.policy.safeDecimals,
     cfg.policy.maxSlippageBps, probeSizes,
   );
 
