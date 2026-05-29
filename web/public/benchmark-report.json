@@ -1,0 +1,449 @@
+{
+  "generatedAt": 1779998646,
+  "scenarios": [
+    {
+      "name": "transient-depeg",
+      "description": "Transient depeg (inspired by USDC March 2023): dip to $0.915 then full recovery, on a thin pool that forces the bridge.",
+      "results": [
+        {
+          "scenarioName": "transient-depeg",
+          "strategyName": "solvent-ai",
+          "initialValue": "1000000000",
+          "finalValue": "1000000000",
+          "pctPreservedBps": 10000,
+          "log": [
+            {
+              "timestamp": 0,
+              "regime": 0,
+              "action": 4,
+              "reasonCode": "park-calm",
+              "valueAfter": "1000000000"
+            },
+            {
+              "timestamp": 3600,
+              "regime": 2,
+              "action": 2,
+              "reasonCode": "liquidity-bridge",
+              "valueAfter": "985000000"
+            },
+            {
+              "timestamp": 7200,
+              "regime": 2,
+              "action": 0,
+              "reasonCode": "bridge-holding",
+              "valueAfter": "960000000"
+            },
+            {
+              "timestamp": 10800,
+              "regime": 2,
+              "action": 0,
+              "reasonCode": "bridge-holding",
+              "valueAfter": "930000000"
+            },
+            {
+              "timestamp": 14400,
+              "regime": 2,
+              "action": 0,
+              "reasonCode": "bridge-holding",
+              "valueAfter": "915000000"
+            },
+            {
+              "timestamp": 18000,
+              "regime": 2,
+              "action": 0,
+              "reasonCode": "bridge-holding",
+              "valueAfter": "930000000"
+            },
+            {
+              "timestamp": 21600,
+              "regime": 2,
+              "action": 0,
+              "reasonCode": "bridge-holding",
+              "valueAfter": "965000000"
+            },
+            {
+              "timestamp": 25200,
+              "regime": 2,
+              "action": 0,
+              "reasonCode": "bridge-holding",
+              "valueAfter": "990000000"
+            },
+            {
+              "timestamp": 28800,
+              "regime": 0,
+              "action": 3,
+              "reasonCode": "unwind-repeg",
+              "valueAfter": "1000000000"
+            }
+          ]
+        },
+        {
+          "scenarioName": "transient-depeg",
+          "strategyName": "passive-hodl",
+          "initialValue": "1000000000",
+          "finalValue": "1000000000",
+          "pctPreservedBps": 10000,
+          "log": [
+            {
+              "timestamp": 0,
+              "regime": 0,
+              "action": 0,
+              "reasonCode": "hodl",
+              "valueAfter": "1000000000"
+            },
+            {
+              "timestamp": 3600,
+              "regime": 2,
+              "action": 0,
+              "reasonCode": "hodl",
+              "valueAfter": "985000000"
+            },
+            {
+              "timestamp": 7200,
+              "regime": 2,
+              "action": 0,
+              "reasonCode": "hodl",
+              "valueAfter": "960000000"
+            },
+            {
+              "timestamp": 10800,
+              "regime": 2,
+              "action": 0,
+              "reasonCode": "hodl",
+              "valueAfter": "930000000"
+            },
+            {
+              "timestamp": 14400,
+              "regime": 2,
+              "action": 0,
+              "reasonCode": "hodl",
+              "valueAfter": "915000000"
+            },
+            {
+              "timestamp": 18000,
+              "regime": 2,
+              "action": 0,
+              "reasonCode": "hodl",
+              "valueAfter": "930000000"
+            },
+            {
+              "timestamp": 21600,
+              "regime": 2,
+              "action": 0,
+              "reasonCode": "hodl",
+              "valueAfter": "965000000"
+            },
+            {
+              "timestamp": 25200,
+              "regime": 2,
+              "action": 0,
+              "reasonCode": "hodl",
+              "valueAfter": "990000000"
+            },
+            {
+              "timestamp": 28800,
+              "regime": 0,
+              "action": 0,
+              "reasonCode": "hodl",
+              "valueAfter": "1000000000"
+            }
+          ]
+        },
+        {
+          "scenarioName": "transient-depeg",
+          "strategyName": "delayed-human",
+          "initialValue": "1000000000",
+          "finalValue": "915000000",
+          "pctPreservedBps": 9150,
+          "log": [
+            {
+              "timestamp": 0,
+              "regime": 0,
+              "action": 0,
+              "reasonCode": "hold-and-hope",
+              "valueAfter": "1000000000"
+            },
+            {
+              "timestamp": 3600,
+              "regime": 2,
+              "action": 0,
+              "reasonCode": "hold-and-hope",
+              "valueAfter": "985000000"
+            },
+            {
+              "timestamp": 7200,
+              "regime": 2,
+              "action": 0,
+              "reasonCode": "hold-and-hope",
+              "valueAfter": "960000000"
+            },
+            {
+              "timestamp": 10800,
+              "regime": 2,
+              "action": 0,
+              "reasonCode": "hold-and-hope",
+              "valueAfter": "930000000"
+            },
+            {
+              "timestamp": 14400,
+              "regime": 2,
+              "action": 1,
+              "reasonCode": "panic-sell",
+              "valueAfter": "915000000"
+            },
+            {
+              "timestamp": 18000,
+              "regime": 2,
+              "action": 0,
+              "reasonCode": "sold-out",
+              "valueAfter": "915000000"
+            },
+            {
+              "timestamp": 21600,
+              "regime": 2,
+              "action": 0,
+              "reasonCode": "sold-out",
+              "valueAfter": "915000000"
+            },
+            {
+              "timestamp": 25200,
+              "regime": 2,
+              "action": 0,
+              "reasonCode": "sold-out",
+              "valueAfter": "915000000"
+            },
+            {
+              "timestamp": 28800,
+              "regime": 0,
+              "action": 0,
+              "reasonCode": "sold-out",
+              "valueAfter": "915000000"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "terminal-collapse",
+      "description": "Terminal collapse (inspired by UST): progressive slide to $0.10, no recovery; liquidity present early then dries.",
+      "results": [
+        {
+          "scenarioName": "terminal-collapse",
+          "strategyName": "solvent-ai",
+          "initialValue": "1000000000",
+          "finalValue": "985000000",
+          "pctPreservedBps": 9850,
+          "log": [
+            {
+              "timestamp": 0,
+              "regime": 0,
+              "action": 4,
+              "reasonCode": "park-calm",
+              "valueAfter": "1000000000"
+            },
+            {
+              "timestamp": 3600,
+              "regime": 2,
+              "action": 1,
+              "reasonCode": "early-exit",
+              "valueAfter": "985000000"
+            },
+            {
+              "timestamp": 7200,
+              "regime": 2,
+              "action": 0,
+              "reasonCode": "secured",
+              "valueAfter": "985000000"
+            },
+            {
+              "timestamp": 10800,
+              "regime": 3,
+              "action": 0,
+              "reasonCode": "secured",
+              "valueAfter": "985000000"
+            },
+            {
+              "timestamp": 14400,
+              "regime": 3,
+              "action": 0,
+              "reasonCode": "secured",
+              "valueAfter": "985000000"
+            },
+            {
+              "timestamp": 18000,
+              "regime": 3,
+              "action": 0,
+              "reasonCode": "secured",
+              "valueAfter": "985000000"
+            },
+            {
+              "timestamp": 21600,
+              "regime": 3,
+              "action": 0,
+              "reasonCode": "secured",
+              "valueAfter": "985000000"
+            },
+            {
+              "timestamp": 25200,
+              "regime": 3,
+              "action": 0,
+              "reasonCode": "secured",
+              "valueAfter": "985000000"
+            },
+            {
+              "timestamp": 28800,
+              "regime": 3,
+              "action": 0,
+              "reasonCode": "secured",
+              "valueAfter": "985000000"
+            }
+          ]
+        },
+        {
+          "scenarioName": "terminal-collapse",
+          "strategyName": "passive-hodl",
+          "initialValue": "1000000000",
+          "finalValue": "100000000",
+          "pctPreservedBps": 1000,
+          "log": [
+            {
+              "timestamp": 0,
+              "regime": 0,
+              "action": 0,
+              "reasonCode": "hodl",
+              "valueAfter": "1000000000"
+            },
+            {
+              "timestamp": 3600,
+              "regime": 2,
+              "action": 0,
+              "reasonCode": "hodl",
+              "valueAfter": "985000000"
+            },
+            {
+              "timestamp": 7200,
+              "regime": 2,
+              "action": 0,
+              "reasonCode": "hodl",
+              "valueAfter": "955000000"
+            },
+            {
+              "timestamp": 10800,
+              "regime": 3,
+              "action": 0,
+              "reasonCode": "hodl",
+              "valueAfter": "900000000"
+            },
+            {
+              "timestamp": 14400,
+              "regime": 3,
+              "action": 0,
+              "reasonCode": "hodl",
+              "valueAfter": "780000000"
+            },
+            {
+              "timestamp": 18000,
+              "regime": 3,
+              "action": 0,
+              "reasonCode": "hodl",
+              "valueAfter": "560000000"
+            },
+            {
+              "timestamp": 21600,
+              "regime": 3,
+              "action": 0,
+              "reasonCode": "hodl",
+              "valueAfter": "340000000"
+            },
+            {
+              "timestamp": 25200,
+              "regime": 3,
+              "action": 0,
+              "reasonCode": "hodl",
+              "valueAfter": "180000000"
+            },
+            {
+              "timestamp": 28800,
+              "regime": 3,
+              "action": 0,
+              "reasonCode": "hodl",
+              "valueAfter": "100000000"
+            }
+          ]
+        },
+        {
+          "scenarioName": "terminal-collapse",
+          "strategyName": "delayed-human",
+          "initialValue": "1000000000",
+          "finalValue": "780000000",
+          "pctPreservedBps": 7800,
+          "log": [
+            {
+              "timestamp": 0,
+              "regime": 0,
+              "action": 0,
+              "reasonCode": "hold-and-hope",
+              "valueAfter": "1000000000"
+            },
+            {
+              "timestamp": 3600,
+              "regime": 2,
+              "action": 0,
+              "reasonCode": "hold-and-hope",
+              "valueAfter": "985000000"
+            },
+            {
+              "timestamp": 7200,
+              "regime": 2,
+              "action": 0,
+              "reasonCode": "hold-and-hope",
+              "valueAfter": "955000000"
+            },
+            {
+              "timestamp": 10800,
+              "regime": 3,
+              "action": 0,
+              "reasonCode": "hold-and-hope",
+              "valueAfter": "900000000"
+            },
+            {
+              "timestamp": 14400,
+              "regime": 3,
+              "action": 1,
+              "reasonCode": "panic-sell",
+              "valueAfter": "780000000"
+            },
+            {
+              "timestamp": 18000,
+              "regime": 3,
+              "action": 0,
+              "reasonCode": "sold-out",
+              "valueAfter": "780000000"
+            },
+            {
+              "timestamp": 21600,
+              "regime": 3,
+              "action": 0,
+              "reasonCode": "sold-out",
+              "valueAfter": "780000000"
+            },
+            {
+              "timestamp": 25200,
+              "regime": 3,
+              "action": 0,
+              "reasonCode": "sold-out",
+              "valueAfter": "780000000"
+            },
+            {
+              "timestamp": 28800,
+              "regime": 3,
+              "action": 0,
+              "reasonCode": "sold-out",
+              "valueAfter": "780000000"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

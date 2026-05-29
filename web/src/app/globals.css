@@ -1,0 +1,51 @@
+:root {
+  /* Schematic Blueprint palette — LOCKED in design spec §3 */
+  --bg-base: #0a1932;
+  --bg-panel: #0e1d3a;
+  --ink-cyan: #7cd5ff;
+  --ink-cyan-bright: #a8e0ff;
+  --text-body: #c8d8f0;
+  --text-strong: #e0eaf8;
+  --text-muted: #6a8aa8;
+  --warm-gold: #e8c060;
+  --border-cyan: rgba(124, 213, 255, 0.28);
+  --border-cyan-faint: rgba(124, 213, 255, 0.12);
+  --observe-tint: rgba(232, 192, 96, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-base);
+  color: var(--text-body);
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.mono {
+  font-family: var(--font-mono), ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+/* Mobile reflow — collapse 2-col + 3-col grids to single-column under 760px. */
+@media (max-width: 760px) {
+  .reflow-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .reflow-hero {
+    font-size: 44px !important;
+  }
+  .reflow-padding {
+    padding: 16px !important;
+  }
+}
