@@ -11,12 +11,14 @@ export interface ExecuteArgs {
   regime: number;
   reasonCode: `0x${string}`;
   signalsHash: `0x${string}`;
+  uri: string;
 }
 
 export interface ObserveArgs {
   regime: number;
   reasonCode: `0x${string}`;
   signalsHash: `0x${string}`;
+  uri: string;
 }
 
 export interface VaultSender {
@@ -46,7 +48,7 @@ export async function runTick(deps: TickDeps): Promise<TickResult> {
   const reasonCode = encodeReasonCode(decision.reasonCode);
 
   if (decision.plan.action === ActionType.NONE) {
-    const txHash = await deps.sender.attestObservation({ regime, reasonCode, signalsHash });
+    const txHash = await deps.sender.attestObservation({ regime, reasonCode, signalsHash, uri: "" });
     return { decision, txHash };
   }
 
@@ -57,6 +59,7 @@ export async function runTick(deps: TickDeps): Promise<TickResult> {
     regime,
     reasonCode,
     signalsHash,
+    uri: "",
   });
   return { decision, txHash };
 }

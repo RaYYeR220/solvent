@@ -19,4 +19,14 @@ describe("viemClients", () => {
     const c = createWriteClient(RPC, PK);
     expect(c.chain?.id).toBe(5000);
   });
+
+  it("createWriteClient exposes waitForTransactionReceipt (extended via publicActions)", () => {
+    const c = createWriteClient(RPC, PK);
+    expect(typeof c.waitForTransactionReceipt).toBe("function");
+  });
+
+  it("createWriteClient exposes writeContract (WalletActions)", () => {
+    const c = createWriteClient(RPC, PK);
+    expect(typeof c.writeContract).toBe("function");
+  });
 });

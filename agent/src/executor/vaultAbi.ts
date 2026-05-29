@@ -1,4 +1,5 @@
-/** Minimal ABI fragment of SolventVault the agent calls. Enums encode as uint8. */
+/** Minimal ABI fragment of SolventVault the agent calls. Mirrors the on-chain
+ *  ABI exported at contracts/exports/abis/SolventVault.json. */
 export const vaultAbi = [
   {
     type: "function",
@@ -10,6 +11,7 @@ export const vaultAbi = [
       { name: "regime", type: "uint8" },
       { name: "reasonCode", type: "bytes32" },
       { name: "signalsHash", type: "bytes32" },
+      { name: "uri", type: "string" },
     ],
     outputs: [],
   },
@@ -21,6 +23,7 @@ export const vaultAbi = [
       { name: "regime", type: "uint8" },
       { name: "reasonCode", type: "bytes32" },
       { name: "signalsHash", type: "bytes32" },
+      { name: "uri", type: "string" },
     ],
     outputs: [],
   },
