@@ -1,0 +1,133 @@
+{
+  "scenario": "terminal-collapse",
+  "ticks": [
+    {
+      "tick": 0,
+      "timestamp": 1780048072192,
+      "regime": "CALM",
+      "action": "PARK_YIELD",
+      "reasonCode": "park-calm",
+      "signals": {
+        "navPrice": "1000000000000000000",
+        "marketPrice": "1000000000000000000",
+        "liquidityDepth": "1000000000000",
+        "assetBalance": "1000000000"
+      },
+      "postActionBalance": "1000000000",
+      "txHash": "0xe040000000000000000000000000000000000000000000000000000000000000",
+      "uri": "data:application/json;base64,eyJhZ2VudElkIjoiMTA2IiwiZGVjaXNpb24iOnsiYWN0aW9uIjoiUEFSS19ZSUVMRCIsImFtb3VudCI6IjEwMDAwMDAwMDAiLCJyZWFzb25Db2RlIjoicGFyay1jYWxtIn0sInJlZ2ltZSI6IkNBTE0iLCJzaWduYWxzIjp7ImFzc2V0QmFsYW5jZSI6IjEwMDAwMDAwMDAiLCJsaXF1aWRpdHlEZXB0aCI6IjEwMDAwMDAwMDAwMDAiLCJtYXJrZXRQcmljZSI6IjEwMDAwMDAwMDAwMDAwMDAwMDAiLCJuYXZQcmljZSI6IjEwMDAwMDAwMDAwMDAwMDAwMDAiLCJvcmFjbGVEaXZlcmdlbmNlQnBzIjowLCJ0aW1lc3RhbXAiOjE3ODAwNDgwNzJ9LCJ0aWNrIjowLCJ0aW1lc3RhbXAiOjE3ODAwNDgwNzIsInR4SGFzaCI6bnVsbCwidmF1bHRBZGRyZXNzIjoiMHgwNjUxMzQ3MGUxNmE3ZDYwNzFBMTI3MDhjMzhhNmZhMEVENjY0NjljIiwidmVyc2lvbiI6IjEuMCJ9"
+    },
+    {
+      "tick": 1,
+      "timestamp": 1780048084193,
+      "regime": "CALM",
+      "action": "PARK_YIELD",
+      "reasonCode": "park-calm",
+      "signals": {
+        "navPrice": "1000000000000000000",
+        "marketPrice": "998000000000000000",
+        "liquidityDepth": "1000000000000",
+        "assetBalance": "1000000000"
+      },
+      "postActionBalance": "1000000000",
+      "txHash": "0xe040000000000000000000000000000000000000000000000000000000000000",
+      "uri": "data:application/json;base64,eyJhZ2VudElkIjoiMTA2IiwiZGVjaXNpb24iOnsiYWN0aW9uIjoiUEFSS19ZSUVMRCIsImFtb3VudCI6IjEwMDAwMDAwMDAiLCJyZWFzb25Db2RlIjoicGFyay1jYWxtIn0sInJlZ2ltZSI6IkNBTE0iLCJzaWduYWxzIjp7ImFzc2V0QmFsYW5jZSI6IjEwMDAwMDAwMDAiLCJsaXF1aWRpdHlEZXB0aCI6IjEwMDAwMDAwMDAwMDAiLCJtYXJrZXRQcmljZSI6Ijk5ODAwMDAwMDAwMDAwMDAwMCIsIm5hdlByaWNlIjoiMTAwMDAwMDAwMDAwMDAwMDAwMCIsIm9yYWNsZURpdmVyZ2VuY2VCcHMiOjAsInRpbWVzdGFtcCI6MTc4MDA0ODA3Mn0sInRpY2siOjEsInRpbWVzdGFtcCI6MTc4MDA0ODA3MiwidHhIYXNoIjpudWxsLCJ2YXVsdEFkZHJlc3MiOiIweDA2NTEzNDcwZTE2YTdkNjA3MUExMjcwOGMzOGE2ZmEwRUQ2NjQ2OWMiLCJ2ZXJzaW9uIjoiMS4wIn0="
+    },
+    {
+      "tick": 2,
+      "timestamp": 1780048096194,
+      "regime": "TERMINAL_DEPEG",
+      "action": "SWAP_TO_SAFE",
+      "reasonCode": "terminal-exit",
+      "signals": {
+        "navPrice": "1000000000000000000",
+        "marketPrice": "850000000000000000",
+        "liquidityDepth": "1000000000000",
+        "assetBalance": "1000000000"
+      },
+      "postActionBalance": "0",
+      "txHash": "0xe010000000000000000000000000000000000000000000000000000000000000",
+      "uri": "data:application/json;base64,eyJhZ2VudElkIjoiMTA2IiwiZGVjaXNpb24iOnsiYWN0aW9uIjoiU1dBUF9UT19TQUZFIiwiYW1vdW50SW4iOiIxMDAwMDAwMDAwIiwiYW1vdW50T3V0TWluIjoiOTcwMDAwMDAwIiwicmVhc29uQ29kZSI6InRlcm1pbmFsLWV4aXQifSwicmVnaW1lIjoiVEVSTUlOQUxfREVQRUciLCJzaWduYWxzIjp7ImFzc2V0QmFsYW5jZSI6IjEwMDAwMDAwMDAiLCJsaXF1aWRpdHlEZXB0aCI6IjEwMDAwMDAwMDAwMDAiLCJtYXJrZXRQcmljZSI6Ijg1MDAwMDAwMDAwMDAwMDAwMCIsIm5hdlByaWNlIjoiMTAwMDAwMDAwMDAwMDAwMDAwMCIsIm9yYWNsZURpdmVyZ2VuY2VCcHMiOjAsInRpbWVzdGFtcCI6MTc4MDA0ODA3Mn0sInRpY2siOjIsInRpbWVzdGFtcCI6MTc4MDA0ODA3MiwidHhIYXNoIjpudWxsLCJ2YXVsdEFkZHJlc3MiOiIweDA2NTEzNDcwZTE2YTdkNjA3MUExMjcwOGMzOGE2ZmEwRUQ2NjQ2OWMiLCJ2ZXJzaW9uIjoiMS4wIn0="
+    },
+    {
+      "tick": 3,
+      "timestamp": 1780048108194,
+      "regime": "TERMINAL_DEPEG",
+      "action": "NONE",
+      "reasonCode": "protect-failed-illiquid",
+      "signals": {
+        "navPrice": "1000000000000000000",
+        "marketPrice": "700000000000000000",
+        "liquidityDepth": "100000000000",
+        "assetBalance": "0"
+      },
+      "postActionBalance": "0",
+      "txHash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "uri": "data:application/json;base64,eyJhZ2VudElkIjoiMTA2IiwiZGVjaXNpb24iOnsiYWN0aW9uIjoiTk9ORSIsInJlYXNvbkNvZGUiOiJwcm90ZWN0LWZhaWxlZC1pbGxpcXVpZCJ9LCJyZWdpbWUiOiJURVJNSU5BTF9ERVBFRyIsInNpZ25hbHMiOnsiYXNzZXRCYWxhbmNlIjoiMCIsImxpcXVpZGl0eURlcHRoIjoiMTAwMDAwMDAwMDAwIiwibWFya2V0UHJpY2UiOiI3MDAwMDAwMDAwMDAwMDAwMDAiLCJuYXZQcmljZSI6IjEwMDAwMDAwMDAwMDAwMDAwMDAiLCJvcmFjbGVEaXZlcmdlbmNlQnBzIjowLCJ0aW1lc3RhbXAiOjE3ODAwNDgwNzJ9LCJ0aWNrIjozLCJ0aW1lc3RhbXAiOjE3ODAwNDgwNzIsInR4SGFzaCI6bnVsbCwidmF1bHRBZGRyZXNzIjoiMHgwNjUxMzQ3MGUxNmE3ZDYwNzFBMTI3MDhjMzhhNmZhMEVENjY0NjljIiwidmVyc2lvbiI6IjEuMCJ9"
+    },
+    {
+      "tick": 4,
+      "timestamp": 1780048120194,
+      "regime": "TERMINAL_DEPEG",
+      "action": "NONE",
+      "reasonCode": "protect-failed-illiquid",
+      "signals": {
+        "navPrice": "1000000000000000000",
+        "marketPrice": "500000000000000000",
+        "liquidityDepth": "100000000000",
+        "assetBalance": "0"
+      },
+      "postActionBalance": "0",
+      "txHash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "uri": "data:application/json;base64,eyJhZ2VudElkIjoiMTA2IiwiZGVjaXNpb24iOnsiYWN0aW9uIjoiTk9ORSIsInJlYXNvbkNvZGUiOiJwcm90ZWN0LWZhaWxlZC1pbGxpcXVpZCJ9LCJyZWdpbWUiOiJURVJNSU5BTF9ERVBFRyIsInNpZ25hbHMiOnsiYXNzZXRCYWxhbmNlIjoiMCIsImxpcXVpZGl0eURlcHRoIjoiMTAwMDAwMDAwMDAwIiwibWFya2V0UHJpY2UiOiI1MDAwMDAwMDAwMDAwMDAwMDAiLCJuYXZQcmljZSI6IjEwMDAwMDAwMDAwMDAwMDAwMDAiLCJvcmFjbGVEaXZlcmdlbmNlQnBzIjowLCJ0aW1lc3RhbXAiOjE3ODAwNDgwNzJ9LCJ0aWNrIjo0LCJ0aW1lc3RhbXAiOjE3ODAwNDgwNzIsInR4SGFzaCI6bnVsbCwidmF1bHRBZGRyZXNzIjoiMHgwNjUxMzQ3MGUxNmE3ZDYwNzFBMTI3MDhjMzhhNmZhMEVENjY0NjljIiwidmVyc2lvbiI6IjEuMCJ9"
+    },
+    {
+      "tick": 5,
+      "timestamp": 1780048132194,
+      "regime": "TERMINAL_DEPEG",
+      "action": "NONE",
+      "reasonCode": "protect-failed-illiquid",
+      "signals": {
+        "navPrice": "1000000000000000000",
+        "marketPrice": "500000000000000000",
+        "liquidityDepth": "100000000000",
+        "assetBalance": "0"
+      },
+      "postActionBalance": "0",
+      "txHash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "uri": "data:application/json;base64,eyJhZ2VudElkIjoiMTA2IiwiZGVjaXNpb24iOnsiYWN0aW9uIjoiTk9ORSIsInJlYXNvbkNvZGUiOiJwcm90ZWN0LWZhaWxlZC1pbGxpcXVpZCJ9LCJyZWdpbWUiOiJURVJNSU5BTF9ERVBFRyIsInNpZ25hbHMiOnsiYXNzZXRCYWxhbmNlIjoiMCIsImxpcXVpZGl0eURlcHRoIjoiMTAwMDAwMDAwMDAwIiwibWFya2V0UHJpY2UiOiI1MDAwMDAwMDAwMDAwMDAwMDAiLCJuYXZQcmljZSI6IjEwMDAwMDAwMDAwMDAwMDAwMDAiLCJvcmFjbGVEaXZlcmdlbmNlQnBzIjowLCJ0aW1lc3RhbXAiOjE3ODAwNDgwNzJ9LCJ0aWNrIjo1LCJ0aW1lc3RhbXAiOjE3ODAwNDgwNzIsInR4SGFzaCI6bnVsbCwidmF1bHRBZGRyZXNzIjoiMHgwNjUxMzQ3MGUxNmE3ZDYwNzFBMTI3MDhjMzhhNmZhMEVENjY0NjljIiwidmVyc2lvbiI6IjEuMCJ9"
+    },
+    {
+      "tick": 6,
+      "timestamp": 1780048144194,
+      "regime": "TERMINAL_DEPEG",
+      "action": "NONE",
+      "reasonCode": "protect-failed-illiquid",
+      "signals": {
+        "navPrice": "1000000000000000000",
+        "marketPrice": "500000000000000000",
+        "liquidityDepth": "100000000000",
+        "assetBalance": "0"
+      },
+      "postActionBalance": "0",
+      "txHash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "uri": "data:application/json;base64,eyJhZ2VudElkIjoiMTA2IiwiZGVjaXNpb24iOnsiYWN0aW9uIjoiTk9ORSIsInJlYXNvbkNvZGUiOiJwcm90ZWN0LWZhaWxlZC1pbGxpcXVpZCJ9LCJyZWdpbWUiOiJURVJNSU5BTF9ERVBFRyIsInNpZ25hbHMiOnsiYXNzZXRCYWxhbmNlIjoiMCIsImxpcXVpZGl0eURlcHRoIjoiMTAwMDAwMDAwMDAwIiwibWFya2V0UHJpY2UiOiI1MDAwMDAwMDAwMDAwMDAwMDAiLCJuYXZQcmljZSI6IjEwMDAwMDAwMDAwMDAwMDAwMDAiLCJvcmFjbGVEaXZlcmdlbmNlQnBzIjowLCJ0aW1lc3RhbXAiOjE3ODAwNDgwNzJ9LCJ0aWNrIjo2LCJ0aW1lc3RhbXAiOjE3ODAwNDgwNzIsInR4SGFzaCI6bnVsbCwidmF1bHRBZGRyZXNzIjoiMHgwNjUxMzQ3MGUxNmE3ZDYwNzFBMTI3MDhjMzhhNmZhMEVENjY0NjljIiwidmVyc2lvbiI6IjEuMCJ9"
+    },
+    {
+      "tick": 7,
+      "timestamp": 1780048156195,
+      "regime": "TERMINAL_DEPEG",
+      "action": "NONE",
+      "reasonCode": "protect-failed-illiquid",
+      "signals": {
+        "navPrice": "1000000000000000000",
+        "marketPrice": "500000000000000000",
+        "liquidityDepth": "100000000000",
+        "assetBalance": "0"
+      },
+      "postActionBalance": "0",
+      "txHash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "uri": "data:application/json;base64,eyJhZ2VudElkIjoiMTA2IiwiZGVjaXNpb24iOnsiYWN0aW9uIjoiTk9ORSIsInJlYXNvbkNvZGUiOiJwcm90ZWN0LWZhaWxlZC1pbGxpcXVpZCJ9LCJyZWdpbWUiOiJURVJNSU5BTF9ERVBFRyIsInNpZ25hbHMiOnsiYXNzZXRCYWxhbmNlIjoiMCIsImxpcXVpZGl0eURlcHRoIjoiMTAwMDAwMDAwMDAwIiwibWFya2V0UHJpY2UiOiI1MDAwMDAwMDAwMDAwMDAwMDAiLCJuYXZQcmljZSI6IjEwMDAwMDAwMDAwMDAwMDAwMDAiLCJvcmFjbGVEaXZlcmdlbmNlQnBzIjowLCJ0aW1lc3RhbXAiOjE3ODAwNDgwNzJ9LCJ0aWNrIjo3LCJ0aW1lc3RhbXAiOjE3ODAwNDgwNzIsInR4SGFzaCI6bnVsbCwidmF1bHRBZGRyZXNzIjoiMHgwNjUxMzQ3MGUxNmE3ZDYwNzFBMTI3MDhjMzhhNmZhMEVENjY0NjljIiwidmVyc2lvbiI6IjEuMCJ9"
+    }
+  ]
+}
