@@ -1,0 +1,133 @@
+{
+  "scenario": "transient-depeg",
+  "ticks": [
+    {
+      "tick": 0,
+      "timestamp": 1780048070508,
+      "regime": "CALM",
+      "action": "PARK_YIELD",
+      "reasonCode": "park-calm",
+      "signals": {
+        "navPrice": "1000000000000000000",
+        "marketPrice": "1000000000000000000",
+        "liquidityDepth": "1000000000000",
+        "assetBalance": "1000000000"
+      },
+      "postActionBalance": "1000000000",
+      "txHash": "0xe040000000000000000000000000000000000000000000000000000000000000",
+      "uri": "data:application/json;base64,eyJhZ2VudElkIjoiMTA2IiwiZGVjaXNpb24iOnsiYWN0aW9uIjoiUEFSS19ZSUVMRCIsImFtb3VudCI6IjEwMDAwMDAwMDAiLCJyZWFzb25Db2RlIjoicGFyay1jYWxtIn0sInJlZ2ltZSI6IkNBTE0iLCJzaWduYWxzIjp7ImFzc2V0QmFsYW5jZSI6IjEwMDAwMDAwMDAiLCJsaXF1aWRpdHlEZXB0aCI6IjEwMDAwMDAwMDAwMDAiLCJtYXJrZXRQcmljZSI6IjEwMDAwMDAwMDAwMDAwMDAwMDAiLCJuYXZQcmljZSI6IjEwMDAwMDAwMDAwMDAwMDAwMDAiLCJvcmFjbGVEaXZlcmdlbmNlQnBzIjowLCJ0aW1lc3RhbXAiOjE3ODAwNDgwNzB9LCJ0aWNrIjowLCJ0aW1lc3RhbXAiOjE3ODAwNDgwNzAsInR4SGFzaCI6bnVsbCwidmF1bHRBZGRyZXNzIjoiMHgwNjUxMzQ3MGUxNmE3ZDYwNzFBMTI3MDhjMzhhNmZhMEVENjY0NjljIiwidmVyc2lvbiI6IjEuMCJ9"
+    },
+    {
+      "tick": 1,
+      "timestamp": 1780048082508,
+      "regime": "CALM",
+      "action": "PARK_YIELD",
+      "reasonCode": "park-calm",
+      "signals": {
+        "navPrice": "1000000000000000000",
+        "marketPrice": "999500000000000000",
+        "liquidityDepth": "1000000000000",
+        "assetBalance": "1000000000"
+      },
+      "postActionBalance": "1000000000",
+      "txHash": "0xe040000000000000000000000000000000000000000000000000000000000000",
+      "uri": "data:application/json;base64,eyJhZ2VudElkIjoiMTA2IiwiZGVjaXNpb24iOnsiYWN0aW9uIjoiUEFSS19ZSUVMRCIsImFtb3VudCI6IjEwMDAwMDAwMDAiLCJyZWFzb25Db2RlIjoicGFyay1jYWxtIn0sInJlZ2ltZSI6IkNBTE0iLCJzaWduYWxzIjp7ImFzc2V0QmFsYW5jZSI6IjEwMDAwMDAwMDAiLCJsaXF1aWRpdHlEZXB0aCI6IjEwMDAwMDAwMDAwMDAiLCJtYXJrZXRQcmljZSI6Ijk5OTUwMDAwMDAwMDAwMDAwMCIsIm5hdlByaWNlIjoiMTAwMDAwMDAwMDAwMDAwMDAwMCIsIm9yYWNsZURpdmVyZ2VuY2VCcHMiOjAsInRpbWVzdGFtcCI6MTc4MDA0ODA3MH0sInRpY2siOjEsInRpbWVzdGFtcCI6MTc4MDA0ODA3MCwidHhIYXNoIjpudWxsLCJ2YXVsdEFkZHJlc3MiOiIweDA2NTEzNDcwZTE2YTdkNjA3MUExMjcwOGMzOGE2ZmEwRUQ2NjQ2OWMiLCJ2ZXJzaW9uIjoiMS4wIn0="
+    },
+    {
+      "tick": 2,
+      "timestamp": 1780048094509,
+      "regime": "WATCH",
+      "action": "NONE",
+      "reasonCode": "watch",
+      "signals": {
+        "navPrice": "1000000000000000000",
+        "marketPrice": "985000000000000000",
+        "liquidityDepth": "1000000000000",
+        "assetBalance": "1000000000"
+      },
+      "postActionBalance": "1000000000",
+      "txHash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "uri": "data:application/json;base64,eyJhZ2VudElkIjoiMTA2IiwiZGVjaXNpb24iOnsiYWN0aW9uIjoiTk9ORSIsInJlYXNvbkNvZGUiOiJ3YXRjaCJ9LCJyZWdpbWUiOiJXQVRDSCIsInNpZ25hbHMiOnsiYXNzZXRCYWxhbmNlIjoiMTAwMDAwMDAwMCIsImxpcXVpZGl0eURlcHRoIjoiMTAwMDAwMDAwMDAwMCIsIm1hcmtldFByaWNlIjoiOTg1MDAwMDAwMDAwMDAwMDAwIiwibmF2UHJpY2UiOiIxMDAwMDAwMDAwMDAwMDAwMDAwIiwib3JhY2xlRGl2ZXJnZW5jZUJwcyI6MCwidGltZXN0YW1wIjoxNzgwMDQ4MDcwfSwidGljayI6MiwidGltZXN0YW1wIjoxNzgwMDQ4MDcwLCJ0eEhhc2giOm51bGwsInZhdWx0QWRkcmVzcyI6IjB4MDY1MTM0NzBlMTZhN2Q2MDcxQTEyNzA4YzM4YTZmYTBFRDY2NDY5YyIsInZlcnNpb24iOiIxLjAifQ=="
+    },
+    {
+      "tick": 3,
+      "timestamp": 1780048106509,
+      "regime": "EARLY_DEPEG",
+      "action": "SWAP_TO_SAFE",
+      "reasonCode": "early-exit",
+      "signals": {
+        "navPrice": "1000000000000000000",
+        "marketPrice": "960000000000000000",
+        "liquidityDepth": "1000000000000",
+        "assetBalance": "1000000000"
+      },
+      "postActionBalance": "0",
+      "txHash": "0xe010000000000000000000000000000000000000000000000000000000000000",
+      "uri": "data:application/json;base64,eyJhZ2VudElkIjoiMTA2IiwiZGVjaXNpb24iOnsiYWN0aW9uIjoiU1dBUF9UT19TQUZFIiwiYW1vdW50SW4iOiIxMDAwMDAwMDAwIiwiYW1vdW50T3V0TWluIjoiOTcwMDAwMDAwIiwicmVhc29uQ29kZSI6ImVhcmx5LWV4aXQifSwicmVnaW1lIjoiRUFSTFlfREVQRUciLCJzaWduYWxzIjp7ImFzc2V0QmFsYW5jZSI6IjEwMDAwMDAwMDAiLCJsaXF1aWRpdHlEZXB0aCI6IjEwMDAwMDAwMDAwMDAiLCJtYXJrZXRQcmljZSI6Ijk2MDAwMDAwMDAwMDAwMDAwMCIsIm5hdlByaWNlIjoiMTAwMDAwMDAwMDAwMDAwMDAwMCIsIm9yYWNsZURpdmVyZ2VuY2VCcHMiOjAsInRpbWVzdGFtcCI6MTc4MDA0ODA3MH0sInRpY2siOjMsInRpbWVzdGFtcCI6MTc4MDA0ODA3MCwidHhIYXNoIjpudWxsLCJ2YXVsdEFkZHJlc3MiOiIweDA2NTEzNDcwZTE2YTdkNjA3MUExMjcwOGMzOGE2ZmEwRUQ2NjQ2OWMiLCJ2ZXJzaW9uIjoiMS4wIn0="
+    },
+    {
+      "tick": 4,
+      "timestamp": 1780048118509,
+      "regime": "EARLY_DEPEG",
+      "action": "NONE",
+      "reasonCode": "protect-failed-illiquid",
+      "signals": {
+        "navPrice": "1000000000000000000",
+        "marketPrice": "950000000000000000",
+        "liquidityDepth": "1000000000000",
+        "assetBalance": "0"
+      },
+      "postActionBalance": "0",
+      "txHash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "uri": "data:application/json;base64,eyJhZ2VudElkIjoiMTA2IiwiZGVjaXNpb24iOnsiYWN0aW9uIjoiTk9ORSIsInJlYXNvbkNvZGUiOiJwcm90ZWN0LWZhaWxlZC1pbGxpcXVpZCJ9LCJyZWdpbWUiOiJFQVJMWV9ERVBFRyIsInNpZ25hbHMiOnsiYXNzZXRCYWxhbmNlIjoiMCIsImxpcXVpZGl0eURlcHRoIjoiMTAwMDAwMDAwMDAwMCIsIm1hcmtldFByaWNlIjoiOTUwMDAwMDAwMDAwMDAwMDAwIiwibmF2UHJpY2UiOiIxMDAwMDAwMDAwMDAwMDAwMDAwIiwib3JhY2xlRGl2ZXJnZW5jZUJwcyI6MCwidGltZXN0YW1wIjoxNzgwMDQ4MDcwfSwidGljayI6NCwidGltZXN0YW1wIjoxNzgwMDQ4MDcwLCJ0eEhhc2giOm51bGwsInZhdWx0QWRkcmVzcyI6IjB4MDY1MTM0NzBlMTZhN2Q2MDcxQTEyNzA4YzM4YTZmYTBFRDY2NDY5YyIsInZlcnNpb24iOiIxLjAifQ=="
+    },
+    {
+      "tick": 5,
+      "timestamp": 1780048130510,
+      "regime": "EARLY_DEPEG",
+      "action": "NONE",
+      "reasonCode": "protect-failed-illiquid",
+      "signals": {
+        "navPrice": "1000000000000000000",
+        "marketPrice": "970000000000000000",
+        "liquidityDepth": "1000000000000",
+        "assetBalance": "0"
+      },
+      "postActionBalance": "0",
+      "txHash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "uri": "data:application/json;base64,eyJhZ2VudElkIjoiMTA2IiwiZGVjaXNpb24iOnsiYWN0aW9uIjoiTk9ORSIsInJlYXNvbkNvZGUiOiJwcm90ZWN0LWZhaWxlZC1pbGxpcXVpZCJ9LCJyZWdpbWUiOiJFQVJMWV9ERVBFRyIsInNpZ25hbHMiOnsiYXNzZXRCYWxhbmNlIjoiMCIsImxpcXVpZGl0eURlcHRoIjoiMTAwMDAwMDAwMDAwMCIsIm1hcmtldFByaWNlIjoiOTcwMDAwMDAwMDAwMDAwMDAwIiwibmF2UHJpY2UiOiIxMDAwMDAwMDAwMDAwMDAwMDAwIiwib3JhY2xlRGl2ZXJnZW5jZUJwcyI6MCwidGltZXN0YW1wIjoxNzgwMDQ4MDcwfSwidGljayI6NSwidGltZXN0YW1wIjoxNzgwMDQ4MDcwLCJ0eEhhc2giOm51bGwsInZhdWx0QWRkcmVzcyI6IjB4MDY1MTM0NzBlMTZhN2Q2MDcxQTEyNzA4YzM4YTZmYTBFRDY2NDY5YyIsInZlcnNpb24iOiIxLjAifQ=="
+    },
+    {
+      "tick": 6,
+      "timestamp": 1780048142510,
+      "regime": "WATCH",
+      "action": "NONE",
+      "reasonCode": "watch",
+      "signals": {
+        "navPrice": "1000000000000000000",
+        "marketPrice": "990000000000000000",
+        "liquidityDepth": "1000000000000",
+        "assetBalance": "0"
+      },
+      "postActionBalance": "0",
+      "txHash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "uri": "data:application/json;base64,eyJhZ2VudElkIjoiMTA2IiwiZGVjaXNpb24iOnsiYWN0aW9uIjoiTk9ORSIsInJlYXNvbkNvZGUiOiJ3YXRjaCJ9LCJyZWdpbWUiOiJXQVRDSCIsInNpZ25hbHMiOnsiYXNzZXRCYWxhbmNlIjoiMCIsImxpcXVpZGl0eURlcHRoIjoiMTAwMDAwMDAwMDAwMCIsIm1hcmtldFByaWNlIjoiOTkwMDAwMDAwMDAwMDAwMDAwIiwibmF2UHJpY2UiOiIxMDAwMDAwMDAwMDAwMDAwMDAwIiwib3JhY2xlRGl2ZXJnZW5jZUJwcyI6MCwidGltZXN0YW1wIjoxNzgwMDQ4MDcwfSwidGljayI6NiwidGltZXN0YW1wIjoxNzgwMDQ4MDcwLCJ0eEhhc2giOm51bGwsInZhdWx0QWRkcmVzcyI6IjB4MDY1MTM0NzBlMTZhN2Q2MDcxQTEyNzA4YzM4YTZmYTBFRDY2NDY5YyIsInZlcnNpb24iOiIxLjAifQ=="
+    },
+    {
+      "tick": 7,
+      "timestamp": 1780048154510,
+      "regime": "CALM",
+      "action": "NONE",
+      "reasonCode": "calm-idle",
+      "signals": {
+        "navPrice": "1000000000000000000",
+        "marketPrice": "1000000000000000000",
+        "liquidityDepth": "1000000000000",
+        "assetBalance": "0"
+      },
+      "postActionBalance": "0",
+      "txHash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "uri": "data:application/json;base64,eyJhZ2VudElkIjoiMTA2IiwiZGVjaXNpb24iOnsiYWN0aW9uIjoiTk9ORSIsInJlYXNvbkNvZGUiOiJjYWxtLWlkbGUifSwicmVnaW1lIjoiQ0FMTSIsInNpZ25hbHMiOnsiYXNzZXRCYWxhbmNlIjoiMCIsImxpcXVpZGl0eURlcHRoIjoiMTAwMDAwMDAwMDAwMCIsIm1hcmtldFByaWNlIjoiMTAwMDAwMDAwMDAwMDAwMDAwMCIsIm5hdlByaWNlIjoiMTAwMDAwMDAwMDAwMDAwMDAwMCIsIm9yYWNsZURpdmVyZ2VuY2VCcHMiOjAsInRpbWVzdGFtcCI6MTc4MDA0ODA3MH0sInRpY2siOjcsInRpbWVzdGFtcCI6MTc4MDA0ODA3MCwidHhIYXNoIjpudWxsLCJ2YXVsdEFkZHJlc3MiOiIweDA2NTEzNDcwZTE2YTdkNjA3MUExMjcwOGMzOGE2ZmEwRUQ2NjQ2OWMiLCJ2ZXJzaW9uIjoiMS4wIn0="
+    }
+  ]
+}
