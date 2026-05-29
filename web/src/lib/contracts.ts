@@ -1,0 +1,88 @@
+import type { Abi } from "viem";
+import vaultAbiJson from "../../../contracts/exports/abis/SolventVault.json" with { type: "json" };
+import attestationAbiJson from "../../../contracts/exports/abis/SolventAttestation.json" with { type: "json" };
+
+function envOrFallback(key: string, fallback: string): string {
+  const v = process.env[key];
+  if (v && v.length > 0) return v;
+  if (typeof window !== "undefined" && process.env.NODE_ENV === "production") {
+    // Production-only: surface a missing-env misconfig instead of silently
+    // running on the hardcoded fallback. Tests + local dev keep the fallback
+    // behavior so vitest doesn't need env wiring.
+    console.error(`Solvent: ${key} missing in production — falling back to ${fallback}`);
+  }
+  return fallback;
+}
+
+export const CONTRACTS = {
+  vault: envOrFallback("NEXT_PUBLIC_VAULT_ADDRESS", "0x06513470e16a7d6071A12708c38a6fa0ED66469c") as `0x${string}`,
+  attestation: envOrFallback("NEXT_PUBLIC_ATTEST_ADDRESS", "0x89D3F83B777b245A80baec60277B449B8E72B5D3") as `0x${string}`,
+  reputationRegistry: envOrFallback("NEXT_PUBLIC_REP_REGISTRY", "0x8004BAa17C55a88189AE136b182e5fdA19dE9b63") as `0x${string}`,
+  asset: envOrFallback("NEXT_PUBLIC_ASSET_ADDRESS", "0x779Ded0c9e1022225f8E0630b35a9b54bE713736") as `0x${string}`,
+  safeAsset: envOrFallback("NEXT_PUBLIC_SAFE_ASSET_ADDRESS", "0x09Bc4E0D864854c6aFB6eB9A9cdF58aC190D0dF9") as `0x${string}`,
+  oracle: "0xA96abbe61AfEdEB0D14a20440Ae7100D9aB4882f" as `0x${string}`,
+  quoter: "0xc4aaDc921E1cdb66c5300Bc158a313292923C0cb" as `0x${string}`,
+  agentId: BigInt(envOrFallback("NEXT_PUBLIC_AGENT_ID", "106")),
+};
+
+export const vaultAbi = vaultAbiJson as Abi;
+export const attestationAbi = attestationAbiJson as Abi;
+
+// ERC-8004 ReputationRegistry — minimal subset (FeedbackGiven event + giveFeedback).
+// Event signature is verified in Task 5 against live-log topic
+// 0x6a4a61743519c9d648a14e6493f47dbe3ff1aa29e7785c96c8326a205e58febc.
+export const reputationRegistryAbi = [
+  {
+    type: "event",
+    name: "FeedbackGiven",
+    inputs: [
+      { name: "agentId", type: "uint256", indexed: true },
+      { name: "from", type: "address", indexed: true },
+      { name: "value", type: "int128", indexed: false },
+      { name: "valueDecimals", type: "uint8", indexed: false },
+      { name: "tag1", type: "string", indexed: false },
+      { name: "tag2", type: "string", indexed: false },
+      { name: "endpoint", type: "string", indexed: false },
+      { name: "feedbackURI", type: "string", indexed: false },
+      { name: "feedbackHash", type: "bytes32", indexed: true },
+    ],
+  },
+] as const;
+
+// Minimal ERC-20 ABI used by useDeposit and the asset balance read.
+export const erc20Abi = [
+  { type: "function", name: "allowance", stateMutability: "view",
+    inputs: [{ name: "owner", type: "address" }, { name: "spender", type: "address" }],
+    outputs: [{ type: "uint256" }] },
+  { type: "function", name: "approve", stateMutability: "nonpayable",
+    inputs: [{ name: "spender", type: "address" }, { name: "amount", type: "uint256" }],
+    outputs: [{ type: "bool" }] },
+  { type: "function", name: "balanceOf", stateMutability: "view",
+    inputs: [{ name: "account", type: "address" }],
+    outputs: [{ type: "uint256" }] },
+  { type: "function", name: "decimals", stateMutability: "view",
+    inputs: [], outputs: [{ type: "uint8" }] },
+] as const;
+
+export const rwaOracleAbi = [
+  { type: "function", name: "getPrice", stateMutability: "view",
+    inputs: [], outputs: [{ type: "uint256" }] },
+] as const;
+
+export const quoterV2Abi = [
+  { type: "function", name: "quoteExactInputSingle", stateMutability: "nonpayable",
+    inputs: [{ type: "tuple", name: "params", components: [
+      { name: "tokenIn", type: "address" },
+      { name: "tokenOut", type: "address" },
+      { name: "amountIn", type: "uint256" },
+      { name: "fee", type: "uint24" },
+      { name: "sqrtPriceLimitX96", type: "uint160" },
+    ]}],
+    outputs: [
+      { name: "amountOut", type: "uint256" },
+      { name: "sqrtPriceX96After", type: "uint160" },
+      { name: "initializedTicksCrossed", type: "uint32" },
+      { name: "gasEstimate", type: "uint256" },
+    ],
+  },
+] as const;
