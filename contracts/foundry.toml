@@ -16,4 +16,6 @@ mantle = "${MANTLE_RPC_URL}"
 [etherscan]
 # Etherscan API V2 multichain endpoint — one key works for Mantle + 60 other EVM chains.
 # Get key at https://etherscan.io/myaccount (free).
-mantle = { key = "${ETHERSCAN_API_KEY}", url = "https://api.etherscan.io/v2/api", chain = 5000 }
+# NOTE: chainid query param must be embedded in URL — forge 1.7.1 doesn't append it
+# from the `chain` field when hitting V2 endpoint.
+mantle = { key = "${ETHERSCAN_API_KEY}", url = "https://api.etherscan.io/v2/api?chainid=5000", chain = 5000 }
