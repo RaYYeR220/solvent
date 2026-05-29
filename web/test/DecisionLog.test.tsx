@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import DecisionLog from "../src/components/DecisionLog";
-import { mockLog, mockVault } from "../src/lib/mockData";
+import { mockLog, mockVault, type LogEntry } from "../src/lib/mockData";
 
 describe("DecisionLog", () => {
   it("renders all 5 entries with timestamps and tx hashes", () => {
@@ -23,5 +23,22 @@ describe("DecisionLog", () => {
   it("shows the attestation count meta", () => {
     render(<DecisionLog entries={mockLog} attestationsAttested={11} attestationsTotal={11} />);
     expect(screen.getByText(/11\/11 attested/)).toBeInTheDocument();
+  });
+});
+
+describe("DecisionLog with txHash", () => {
+  it("renders txShort as an external MantleScan link when txHash is provided", () => {
+    const entries: LogEntry[] = [{
+      timestamp: "14:02",
+      reasonCode: "park-calm",
+      description: "yield deployed",
+      txShort: "0x84…f2",
+      txHash: "0x84abc",
+    }];
+    const { container } = render(
+      <DecisionLog entries={entries} attestationsAttested={1} attestationsTotal={1} />,
+    );
+    const link = container.querySelector("a");
+    expect(link?.getAttribute("href")).toContain("/tx/0x84abc");
   });
 });

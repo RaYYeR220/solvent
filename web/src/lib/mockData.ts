@@ -31,6 +31,7 @@ export interface LogEntry {
   reasonCode: "park-calm" | "observe" | "bridge" | "unwind" | "swap";
   description: string;
   txShort: string;     // "0x84…f2"
+  txHash?: string;
 }
 
 export interface PolicyPreset {

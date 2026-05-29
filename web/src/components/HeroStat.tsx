@@ -44,7 +44,7 @@ export default function HeroStat({ vault }: HeroStatProps) {
         className="mono"
         style={{ fontSize: 12.5, color: "var(--text-muted)", marginBottom: 14 }}
       >
-        {vault.usdyBalance.toFixed(2)} USDY  ·  entry {fmtUsd(vault.entryUsd)}  ·  Δ{" "}
+        {vault.usdyBalance.toFixed(2)} {vault.asset}  ·  entry {fmtUsd(vault.entryUsd)}  ·  Δ{" "}
         <span style={{ color: "var(--ink-cyan)" }}>{fmtDelta(vault.deltaPct)}</span>
       </div>
       <div

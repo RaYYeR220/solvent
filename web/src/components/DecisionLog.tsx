@@ -51,7 +51,19 @@ export default function DecisionLog({ entries, attestationsAttested, attestation
               <span style={{ color: isObserve ? "var(--warm-gold)" : undefined, opacity: isObserve ? 0.85 : 0.45, flex: 1 }}>
                 {"— "}{entry.description}
               </span>
-              <span style={{ opacity: 0.4, paddingRight: isObserve ? 6 : 0 }}>{entry.txShort}</span>
+              {entry.txHash ? (
+                <a
+                  href={`${process.env.NEXT_PUBLIC_MANTLESCAN_URL ?? "https://mantlescan.xyz"}/tx/${entry.txHash}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ opacity: 0.4, paddingRight: isObserve ? 6 : 0, color: "var(--ink-cyan)", textDecoration: "none" }}
+                  title={entry.txHash}
+                >
+                  {entry.txShort}
+                </a>
+              ) : (
+                <span style={{ opacity: 0.4, paddingRight: isObserve ? 6 : 0 }}>{entry.txShort}</span>
+              )}
             </div>
           );
         })}
