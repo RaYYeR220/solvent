@@ -1,5 +1,5 @@
 import type { Address } from "../types";
-import type { ExecuteArgs, ObserveArgs, VaultSender } from "../loop";
+import type { ExecuteArgs, ObserveArgs, VaultSender } from "../runtime/runTick";
 import { vaultAbi } from "./vaultAbi";
 
 /** The slice of a viem client we use. In production this is one viem WalletClient

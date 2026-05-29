@@ -4,9 +4,11 @@ export interface Config {
   rpcUrl: string;
   agentPrivateKey: `0x${string}`;
   vaultAddress: Address;
+  agentId: bigint;
   asset: Address;
   safeAsset: Address;
   pollIntervalMs: number;
+  pinataJwt?: string;
   policy: AgentPolicy;
 }
 
@@ -33,11 +35,8 @@ function reqInt(env: Env, key: string): number {
 
 function reqBigInt(env: Env, key: string): bigint {
   const v = req(env, key);
-  try {
-    return BigInt(v);
-  } catch {
-    throw new Error(`Invalid integer for ${key}: ${v}`);
-  }
+  try { return BigInt(v); }
+  catch { throw new Error(`Invalid integer for ${key}: ${v}`); }
 }
 
 function reqPositiveInt(env: Env, key: string): number {
@@ -67,9 +66,11 @@ export function loadConfig(env: Env): Config {
     rpcUrl: req(env, "MANTLE_RPC_URL"),
     agentPrivateKey: pk as `0x${string}`,
     vaultAddress: reqAddress(env, "VAULT_ADDRESS"),
+    agentId: reqBigInt(env, "AGENT_ID"),
     asset: reqAddress(env, "ASSET_ADDRESS"),
     safeAsset: reqAddress(env, "SAFE_ASSET_ADDRESS"),
     pollIntervalMs: reqPositiveInt(env, "POLL_INTERVAL_MS"),
+    pinataJwt: env.PINATA_JWT,
     policy,
   };
 }
