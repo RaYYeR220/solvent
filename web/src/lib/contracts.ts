@@ -28,23 +28,28 @@ export const CONTRACTS = {
 export const vaultAbi = vaultAbiJson as Abi;
 export const attestationAbi = attestationAbiJson as Abi;
 
-// ERC-8004 ReputationRegistry — minimal subset (FeedbackGiven event + giveFeedback).
-// Event signature is verified in Task 5 against live-log topic
-// 0x6a4a61743519c9d648a14e6493f47dbe3ff1aa29e7785c96c8326a205e58febc.
+// ERC-8004 ReputationRegistry — minimal subset (NewFeedback event).
+// Verified 2026-05-29 against live-log topic
+// 0x6a4a61743519c9d648a14e6493f47dbe3ff1aa29e7785c96c8326a205e58febc
+// → keccak256("NewFeedback(uint256,address,uint64,int128,uint8,string,string,string,string,string,bytes32)")
+// (upstream canonical name; the spec calls it "FeedbackGiven" but the deployed
+//  contract emits "NewFeedback" — sampled from 0x8004BAa17C55a88189AE136b182e5fdA19dE9b63).
 export const reputationRegistryAbi = [
   {
     type: "event",
-    name: "FeedbackGiven",
+    name: "NewFeedback",
     inputs: [
       { name: "agentId", type: "uint256", indexed: true },
-      { name: "from", type: "address", indexed: true },
+      { name: "clientAddress", type: "address", indexed: true },
+      { name: "feedbackIndex", type: "uint64", indexed: false },
       { name: "value", type: "int128", indexed: false },
       { name: "valueDecimals", type: "uint8", indexed: false },
+      { name: "indexedTag1", type: "string", indexed: true },
       { name: "tag1", type: "string", indexed: false },
       { name: "tag2", type: "string", indexed: false },
       { name: "endpoint", type: "string", indexed: false },
       { name: "feedbackURI", type: "string", indexed: false },
-      { name: "feedbackHash", type: "bytes32", indexed: true },
+      { name: "feedbackHash", type: "bytes32", indexed: false },
     ],
   },
 ] as const;

@@ -19,6 +19,6 @@ describe("CONTRACTS", () => {
     expect(attestFnNames).toContain("record");
 
     const repEvents = (reputationRegistryAbi as unknown as any[]).filter(e => e.type === "event").map(e => e.name);
-    expect(repEvents).toContain("FeedbackGiven");
+    expect(repEvents).toContain("NewFeedback");
   });
 });
