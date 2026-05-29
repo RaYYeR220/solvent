@@ -16,7 +16,9 @@
   - policy: earlyTrig 0.5% / termTrig 5% / maxSlippage 3% / maxBridgeLTV 50%
 
 ## Status
-- Pending (filed 2026-05-29)
+- **Email sent 2026-05-29.** Awaiting Ondo response (no SLA; Ondo's process is manual review).
+- If approved before 2026-06-15 (hackathon deadline): redeploy with `RISK_ASSET=0x5bE26527e817998A7206475496fDE1E68957c5A6` (USDY).
+- If not: live demo runs on USDT0 (current deploy), USDY path demonstrated end-to-end in fork-replay (Plan 6).
 
 ## If approved
 Re-run Deploy.s.sol with `RISK_ASSET=0x5bE26527e817998A7206475496fDE1E68957c5A6` (USDY).
