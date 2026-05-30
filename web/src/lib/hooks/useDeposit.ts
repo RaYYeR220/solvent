@@ -66,7 +66,7 @@ export function useDeposit(): DepositLive {
         address: CONTRACTS.vault,
         abi: vaultAbi,
         functionName: "deposit",
-        args: [amount],
+        args: [amount, address],
       });
       setDepositTxHash(txDeposit);
       setState("done");
