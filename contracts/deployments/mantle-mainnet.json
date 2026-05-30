@@ -2,14 +2,18 @@
   "chainId": 5000,
   "network": "mantle",
   "deployedAt": "2026-05-29",
+  "v2DeployedAt": "2026-05-30",
   "deployer": "0x3A3Bf4a0dFa88a040693F9718cEd65dA23f40798",
   "agentEOA": "0x8D8BB77189a95eFF0D45EB08A75e35DcA8a1432c",
   "agentMigratedAt": "2026-05-29",
   "agentMigrationBlock": 95954922,
   "deployBlock": 95950287,
+  "v2DeployBlock": 95991580,
   "totalGasPaidMnt": "0.225203150004504063",
+  "v2GasPaidMnt": "0.165564931005232523",
   "addresses": {
-    "solventVault": "0x06513470e16a7d6071A12708c38a6fa0ED66469c",
+    "solventVault": "0xDDEd84Ef1ceA80af70b23B599cC9672a15c57c9f",
+    "solventVaultV1": "0x06513470e16a7d6071A12708c38a6fa0ED66469c",
     "solventAttestation": "0x89D3F83B777b245A80baec60277B449B8E72B5D3",
     "agniDexAdapter": "0x24090d62792930Aa34351B8b19850581D48628f9",
     "initLendingAdapter": "0x783bC82FE4AFB635De351EEB0D09542D3B09C847",
@@ -18,6 +22,30 @@
     "safeAsset": "0x09Bc4E0D864854c6aFB6eB9A9cdF58aC190D0dF9",
     "riskAssetSymbol": "USDT0",
     "safeAssetSymbol": "USDC"
+  },
+  "v2": {
+    "deployTx": "0x95671b9ac23431d4c5010a9b0a92b50aac7cb9cd79f8433300807888042220c9",
+    "setDexRouterTx": "0xf2cde0a7ecf90ba332ed18aa5856720d2dc37944a712dcef6f34fb59abdf2478",
+    "migrationTxs": {
+      "v1Drain": "0x1a832d55be3b7e253d901bd1c15acef440924c4d11d08ec6bf6ad6ab4c2d67b8",
+      "v1KillSwitch": "0x9663b18a26e02fe0ac973e08c24feae187760caf505a397b863fa9f70021ddbb"
+    },
+    "policy": {
+      "earlyDivergenceBps": 50,
+      "terminalDivergenceBps": 500,
+      "liquidityFloor": 0,
+      "maxSlippageBps": 300,
+      "safeAsset": "USDC",
+      "bridgeVenue": "0x0000000000000000000000000000000000000000",
+      "maxBridgeLTVBps": 0,
+      "allowedActions": "SWAP_TO_SAFE only (bitmask = 2)"
+    },
+    "shareToken": {
+      "name": "Solvent svUSDT0",
+      "symbol": "svUSDT0",
+      "standard": "ERC-4626"
+    },
+    "notes": "ERC-4626 vault; svUSDT0 shares; reuses SolventAttestation + AgniDexAdapter from V1 deployment. V1 kept as solventVaultV1 (kill-switched + drained). Permissionless deposit/withdraw via shares; agent retains executeProtectiveAction / attestObservation surface unchanged. BRIDGE_VIA_LENDING + PARK_YIELD disabled by default policy until their accounting is wired into totalAssets()."
   },
   "txHashes": {
     "registerIdentity": "0x250c665f0cd621125979a2a79fd45b7340aa12fef10f506666599318b9e15e44",
@@ -32,7 +60,8 @@
     "agentMigrationFundEOA": "0x12e6ad173c10c6ec38ad4a42948af1054f716bd61505af0154cf02c073f8e2b8"
   },
   "mantlescanLinks": {
-    "solventVault": "https://mantlescan.xyz/address/0x06513470e16a7d6071A12708c38a6fa0ED66469c",
+    "solventVault": "https://mantlescan.xyz/address/0xDDEd84Ef1ceA80af70b23B599cC9672a15c57c9f",
+    "solventVaultV1": "https://mantlescan.xyz/address/0x06513470e16a7d6071A12708c38a6fa0ED66469c",
     "solventAttestation": "https://mantlescan.xyz/address/0x89D3F83B777b245A80baec60277B449B8E72B5D3",
     "agniDexAdapter": "https://mantlescan.xyz/address/0x24090d62792930Aa34351B8b19850581D48628f9",
     "initLendingAdapter": "https://mantlescan.xyz/address/0x783bC82FE4AFB635De351EEB0D09542D3B09C847"
@@ -43,7 +72,7 @@
     "vault.agent": "0x8D8BB77189a95eFF0D45EB08A75e35DcA8a1432c (fresh agent EOA; hot key in GH Secrets; migrated from deployer 2026-05-29 tx 0x52a6f4833d31a98ed7a5012520de04bc92305a15dcd929b188dcba861dd662c2)",
     "vault.agentId": "106 (ERC-8004 Identity NFT — transferred from deployer to agent EOA 2026-05-29 tx 0x5a5540ca8f346f23170d1306387bf907c92ef7b4e18205b7d95879f0dd72ea08)",
     "vault.dexRouter": "AgniDexAdapter (0x24090d62792930Aa34351B8b19850581D48628f9)",
-    "vault.yieldVenue": "InitLendingAdapter (0x783bC82FE4AFB635De351EEB0D09542D3B09C847)",
+    "vault.yieldVenue": "intentionally unset on V2 (PARK_YIELD disabled in default policy)",
     "attestation.reputationRegistry": "ERC-8004 ReputationRegistry (0x8004BAa17C55a88189AE136b182e5fdA19dE9b63)",
     "policy": {
       "earlyDivergenceBps": 50,
@@ -51,9 +80,9 @@
       "liquidityFloor": 0,
       "maxSlippageBps": 300,
       "safeAsset": "USDC",
-      "bridgeVenue": "InitLendingAdapter (0x783bC82FE4AFB635De351EEB0D09542D3B09C847)",
-      "maxBridgeLTVBps": 5000,
-      "allowedActions": "SWAP_TO_SAFE | BRIDGE_VIA_LENDING | UNWIND_BRIDGE | PARK_YIELD"
+      "bridgeVenue": "address(0) — BRIDGE disabled in V2 default",
+      "maxBridgeLTVBps": 0,
+      "allowedActions": "SWAP_TO_SAFE only"
     },
     "agniDexAdapter": {
       "swapRouter": "0x319B69888b0d11cEC22caA5034e25FfFBDc88421 (Agni V3)",
@@ -72,8 +101,10 @@
     "etherscanV2GetKeyAt": "https://etherscan.io/myaccount"
   },
   "ondoAllowlist": {
-    "status": "pending — request filed 2026-05-29",
-    "requestedVaultAddress": "0x06513470e16a7d6071A12708c38a6fa0ED66469c",
+    "status": "pending — request filed 2026-05-29 with V1 address; needs update to V2 address",
+    "requestedVaultAddressV1": "0x06513470e16a7d6071A12708c38a6fa0ED66469c",
+    "currentVaultAddressV2": "0xDDEd84Ef1ceA80af70b23B599cC9672a15c57c9f",
+    "todo": "send follow-up email to Ondo with V2 vault address",
     "ifApproved": "redeploy with RISK_ASSET=0x5bE26527e817998A7206475496fDE1E68957c5A6 (USDY)"
   }
 }
