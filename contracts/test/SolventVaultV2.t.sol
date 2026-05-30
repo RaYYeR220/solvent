@@ -291,6 +291,90 @@ contract SolventVaultV2Test is Test {
         assertEq(vault.balanceOf(alice), 50e6);
     }
 
+    function test_transferOwnership_onlyOwner() public {
+        vm.prank(address(0xDEAD));
+        vm.expectRevert(SolventVaultV2.NotOwner.selector);
+        vault.transferOwnership(address(0xBEEF));
+    }
+
+    function test_transferOwnership_rejectsZeroAddress() public {
+        vm.prank(owner);
+        vm.expectRevert(SolventVaultV2.ZeroAddress.selector);
+        vault.transferOwnership(address(0));
+    }
+
+    function test_transferOwnership_successFlipsOwner() public {
+        address newOwner = address(0xBEEF);
+        vm.prank(owner);
+        vault.transferOwnership(newOwner);
+        assertEq(vault.owner(), newOwner);
+        // Old owner can no longer call onlyOwner functions.
+        vm.prank(owner);
+        vm.expectRevert(SolventVaultV2.NotOwner.selector);
+        vault.setKillSwitch(true);
+        // New owner can.
+        vm.prank(newOwner);
+        vault.setKillSwitch(true);
+        assertTrue(vault.killSwitch());
+    }
+
+    function test_redeemAll_revertsOnZeroShares() public {
+        asset.mint(alice, 10e6);
+        vm.startPrank(alice);
+        asset.approve(address(vault), 10e6);
+        vault.deposit(10e6, alice);
+        vm.expectRevert(SolventVaultV2.ZeroShares.selector);
+        vault.redeemAll(0, alice);
+        vm.stopPrank();
+    }
+
+    function test_redeemAll_revertsOnEmptyVault() public {
+        vm.prank(alice);
+        vm.expectRevert(SolventVaultV2.EmptyVault.selector);
+        vault.redeemAll(1, alice);
+    }
+
+    function test_redeemAll_rejectsZeroReceiver() public {
+        asset.mint(alice, 10e6);
+        vm.startPrank(alice);
+        asset.approve(address(vault), 10e6);
+        vault.deposit(10e6, alice);
+        vm.expectRevert(SolventVaultV2.ZeroAddress.selector);
+        vault.redeemAll(5e6, address(0));
+        vm.stopPrank();
+    }
+
+    function test_redeemAll_lastRedeemerDrainsBothBalances() public {
+        // Alice 100 deposit; agent swaps half to safe.
+        asset.mint(alice, 100e6);
+        vm.startPrank(alice);
+        asset.approve(address(vault), 100e6);
+        vault.deposit(100e6, alice);
+        vm.stopPrank();
+
+        MockDexRouter dex = _seedMockDex();
+        dex.setRate(1e6, 1e6);
+        address[] memory path = new address[](2);
+        path[0] = _assetAddr();
+        path[1] = address(safe);
+        bytes memory params = abi.encode(uint256(50e6), uint256(49e6), path);
+        vm.prank(agent);
+        vault.executeProtectiveAction(
+            ActionType.SWAP_TO_SAFE, params, Regime.EARLY_DEPEG,
+            keccak256("early-exit"), bytes32(0), ""
+        );
+
+        // Alice redeems ALL her shares.
+        vm.prank(alice);
+        vault.redeemAll(100e6, alice);
+
+        // Vault is fully drained of both balances.
+        assertEq(asset.balanceOf(address(vault)), 0);
+        assertEq(safe.balanceOf(address(vault)), 0);
+        assertEq(vault.balanceOf(alice), 0);
+        assertEq(vault.totalSupply(), 0);
+    }
+
     function test_rescue_onlyWhenKilled_onlyOwner() public {
         asset.mint(alice, 10e6);
         vm.startPrank(alice);

@@ -39,6 +39,8 @@ contract SolventVaultV2 is ERC4626, ReentrancyGuard {
     error NotKilled();
     error ActionNotAllowed(ActionType action);
     error ZeroAddress();
+    error ZeroShares();
+    error EmptyVault();
     error SlippageFloorBreached();
     error BadSwapPath();
     error BorrowExceedsMaxLTV();
@@ -50,6 +52,8 @@ contract SolventVaultV2 is ERC4626, ReentrancyGuard {
     event YieldVenueChanged(address indexed venue);
     event ProtectiveActionExecuted(ActionType indexed action, int256 outcome);
     event Rescued(address indexed token, uint256 amount, address indexed to);
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+    event RedeemedAll(address indexed caller, address indexed receiver, uint256 assetOut, uint256 safeOut, uint256 shares);
 
     modifier onlyOwner() {
         if (msg.sender != owner) revert NotOwner();
@@ -129,7 +133,9 @@ contract SolventVaultV2 is ERC4626, ReentrancyGuard {
 
     function transferOwnership(address newOwner) external onlyOwner {
         if (newOwner == address(0)) revert ZeroAddress();
+        address previousOwner = owner;
         owner = newOwner;
+        emit OwnershipTransferred(previousOwner, newOwner);
     }
 
     // --- agent surface (copied verbatim from V1 — same params, same checks) ---
@@ -241,12 +247,15 @@ contract SolventVaultV2 is ERC4626, ReentrancyGuard {
     // --- redeemAll: pro-rata mix of asset + safe-asset out ---
 
     /// @notice Non-standard redemption that hands the receiver their pro-rata
-    /// share of BOTH the risk asset and the safe asset. Used when the vault is
-    /// in safe mode (post-`SWAP_TO_SAFE`) and standard `redeem(asset)` would
-    /// revert because the vault holds zero risk asset.
+    /// share of BOTH the risk asset and the safe asset. Useful when the vault
+    /// is in safe mode (post-`SWAP_TO_SAFE`) and standard `redeem(asset)` would
+    /// revert because the vault holds zero risk asset. Always callable — does
+    /// NOT enforce a safe-mode precondition.
     function redeemAll(uint256 shares, address receiver) external nonReentrant {
+        if (shares == 0) revert ZeroShares();
+        if (receiver == address(0)) revert ZeroAddress();
         uint256 supply = totalSupply();
-        if (shares == 0 || supply == 0) revert ZeroAddress();
+        if (supply == 0) revert EmptyVault();
 
         uint256 assetBal = IERC20(asset()).balanceOf(address(this));
         uint256 safeBal  = IERC20(policy.safeAsset).balanceOf(address(this));
@@ -257,6 +266,9 @@ contract SolventVaultV2 is ERC4626, ReentrancyGuard {
 
         if (assetOut > 0) IERC20(asset()).safeTransfer(receiver, assetOut);
         if (safeOut  > 0) IERC20(policy.safeAsset).safeTransfer(receiver, safeOut);
+
+        emit Withdraw(msg.sender, receiver, msg.sender, assetOut, shares);
+        emit RedeemedAll(msg.sender, receiver, assetOut, safeOut, shares);
     }
 
     // --- emergency rescue (owner-only, kill-switch-gated) ---
