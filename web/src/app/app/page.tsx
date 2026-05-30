@@ -103,6 +103,10 @@ export default function DashboardPage() {
       maxLtvPct: Math.round(policy.maxBridgeLTVBps / 100),
       safeAsset: SAFE_SYMBOL,
       slippageCapBps: policy.maxSlippageBps,
+      // T14 will wire these from on-chain policy bitmask + vault state.
+      allowSwap: false,
+      allowBridge: false,
+      killSwitch: false,
     }),
     [
       policy.earlyDivergenceBps,

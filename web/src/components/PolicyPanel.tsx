@@ -18,6 +18,9 @@ function buildRows(p: PolicyView): Row[] {
     { label: "max_ltv", value: `${p.maxLtvPct}%`, color: "var(--text-strong)" },
     { label: "safe_asset", value: p.safeAsset, color: "var(--ink-cyan)" },
     { label: "slippage_cap", value: `${p.slippageCapBps} bps`, color: "var(--text-strong)" },
+    { label: "allow_swap", value: p.allowSwap ? "✓" : "✗", color: p.allowSwap ? "var(--ink-cyan)" : "var(--warm-gold)" },
+    { label: "allow_bridge", value: p.allowBridge ? "✓" : "✗", color: p.allowBridge ? "var(--ink-cyan)" : "var(--warm-gold)" },
+    { label: "kill_switch", value: p.killSwitch ? "ON" : "OFF", color: p.killSwitch ? "var(--warm-gold)" : "var(--ink-cyan)" },
   ];
 }
 
