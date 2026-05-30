@@ -25,11 +25,11 @@ vi.mock("../src/lib/hooks/useDecisionLog", () => ({
   }),
 }));
 
-import Header from "../src/components/Header";
+import DashboardHeader from "../src/components/DashboardHeader";
 
-describe("Header", () => {
+describe("DashboardHeader", () => {
   it("renders brand + three status rows", () => {
-    const { getByText, container } = render(<Header />);
+    const { getByText, container } = render(<DashboardHeader />);
     expect(getByText("SOLVENT")).toBeTruthy();
     expect(getByText(/DEPEG\.GUARDIAN/)).toBeTruthy();
     expect(getByText(/KILLSWITCH/i)).toBeTruthy();
