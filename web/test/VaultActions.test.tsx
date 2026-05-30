@@ -34,6 +34,7 @@ vi.mock("../src/lib/hooks/useDeposit", () => ({
     approveTxHash: undefined,
     depositTxHash: undefined,
     error: undefined,
+    approve: vi.fn(),
     deposit: vi.fn(),
   }),
 }));

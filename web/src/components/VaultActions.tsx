@@ -134,7 +134,7 @@ export default function VaultActions() {
           type="button"
           onClick={async () => {
             if (amountRaw === BigInt(0)) return;
-            await dep.deposit(amountRaw);
+            await dep.approve(amountRaw);
           }}
           disabled={allowance >= amountRaw || amountRaw === BigInt(0) || dep.state === "approving"}
           style={actionBtnStyle(allowance >= amountRaw || amountRaw === BigInt(0))}

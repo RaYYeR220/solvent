@@ -56,8 +56,11 @@ jobs:
           MAX_BRIDGE_LTV_BPS: "5000"
           ASSET_DECIMALS: "6"
           SAFE_DECIMALS: "6"
-          # Bitmap: PARK_YIELD (1<<4=16) | UNWIND_BRIDGE (1<<3=8) | BRIDGE_VIA_LENDING (1<<2=4) | SWAP_TO_SAFE (1<<1=2) = 30
-          ALLOWED_ACTIONS: "30"
+          # Must match SolventVaultV2's on-chain `policy.allowedActions`.
+          # V2 default = SWAP_TO_SAFE bit only (2). Any other action chosen by
+          # the agent → on-chain revert and a crashed tick. Full bitmap ref:
+          # PARK_YIELD (16) | UNWIND_BRIDGE (8) | BRIDGE_VIA_LENDING (4) | SWAP_TO_SAFE (2).
+          ALLOWED_ACTIONS: "2"
         shell: bash
         run: |
           set -eo pipefail

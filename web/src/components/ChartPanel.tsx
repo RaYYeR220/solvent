@@ -47,7 +47,7 @@ export default function ChartPanel({ entries }: ChartPanelProps) {
     if (n === 0) return [];
     return sorted.map((e, i) => {
       const nav = priceFromWei(e.payload?.signals?.navPrice);
-      const mkt = priceFromWei(e.payload?.signals?.dexPrice);
+      const mkt = priceFromWei(e.payload?.signals?.marketPrice);
       const x = n === 1 ? VIEW_W / 2 : (i * VIEW_W) / (n - 1);
       return {
         x,
