@@ -58,23 +58,60 @@ describe("VaultActions", () => {
     useReadContractMock.mockReturnValue({ data: BigInt(0), refetch: vi.fn() });
     const { container } = render(<VaultActions />);
     expect(container.textContent?.toLowerCase()).toContain("connect");
+    // No deposit/withdraw sections when disconnected.
+    expect(container.textContent?.toLowerCase()).not.toContain("// deposit");
   });
 
-  it("renders deposit tab by default when wallet connected", () => {
+  it("shows BOTH deposit and withdraw sections side-by-side when connected (no tabs)", () => {
     useAccountMock.mockReturnValue({ address: "0xUSER", isConnected: true });
     useReadContractMock.mockReturnValue({ data: BigInt(0), refetch: vi.fn() });
-    const { getAllByText, getByPlaceholderText } = render(<VaultActions />);
-    expect(getAllByText(/DEPOSIT/i).length).toBeGreaterThan(0);
-    expect(getAllByText(/WITHDRAW/i).length).toBeGreaterThan(0);
-    expect(getByPlaceholderText(/0\.00/)).toBeTruthy();
-    expect(getAllByText(/APPROVE/i).length).toBeGreaterThan(0);
+    const { container, queryByRole } = render(<VaultActions />);
+    const text = container.textContent ?? "";
+    expect(text.toLowerCase()).toContain("// deposit");
+    expect(text.toLowerCase()).toContain("// withdraw");
+    expect(text).toContain("YOU PAY");
+    expect(text).toContain("YOU BURN");
+    // No tab buttons — there should be no plain-text "DEPOSIT" / "WITHDRAW"
+    // toggle-style buttons. The buttons that DO exist are MAX or state-driven
+    // primary buttons (ENTER AMOUNT / APPROVE X / etc.).
+    expect(queryByRole("button", { name: /^deposit$/i })).toBeNull();
+    expect(queryByRole("button", { name: /^withdraw$/i })).toBeNull();
   });
 
-  it("switches to withdraw tab on click", () => {
+  it("session_log shows empty-state placeholder by default", () => {
     useAccountMock.mockReturnValue({ address: "0xUSER", isConnected: true });
     useReadContractMock.mockReturnValue({ data: BigInt(0), refetch: vi.fn() });
-    const { getByText, container } = render(<VaultActions />);
-    fireEvent.click(getByText(/^WITHDRAW$/i));
-    expect(container.textContent?.toUpperCase()).toContain("YOUR POSITION");
+    const { container } = render(<VaultActions />);
+    expect(container.textContent?.toLowerCase()).toContain("session_log");
+    expect(container.textContent?.toLowerCase()).toContain("no actions yet");
+  });
+
+  it("MAX button on deposit side sets amount to the wallet USDT0 balance", () => {
+    useAccountMock.mockReturnValue({ address: "0xUSER", isConnected: true });
+    // First read = walletBalance, second = allowance, third = totalSupply.
+    // Stub all reads to walletBal=47_500_000 (47.50 USDT0).
+    useReadContractMock.mockImplementation(({ functionName }: { functionName: string }) => {
+      if (functionName === "balanceOf") return { data: BigInt(47_500_000), refetch: vi.fn() };
+      return { data: BigInt(0), refetch: vi.fn() };
+    });
+    const { container, getByLabelText } = render(<VaultActions />);
+    const input = getByLabelText(/deposit amount/i) as HTMLInputElement;
+    expect(input.value).toBe("");
+    // Click the deposit-column MAX button (the first MAX in the DOM).
+    const maxButtons = Array.from(container.querySelectorAll("button")).filter(
+      (b) => b.textContent?.trim() === "MAX",
+    );
+    expect(maxButtons.length).toBeGreaterThanOrEqual(1);
+    fireEvent.click(maxButtons[0]);
+    expect(input.value).toBe("47.5");
+  });
+
+  it("primary button label flips to APPROVE … once an amount is entered (insufficient allowance)", () => {
+    useAccountMock.mockReturnValue({ address: "0xUSER", isConnected: true });
+    useReadContractMock.mockReturnValue({ data: BigInt(0), refetch: vi.fn() });
+    const { container, getByLabelText } = render(<VaultActions />);
+    const input = getByLabelText(/deposit amount/i) as HTMLInputElement;
+    fireEvent.change(input, { target: { value: "10" } });
+    expect(container.textContent?.toUpperCase()).toContain("APPROVE 10");
   });
 });
