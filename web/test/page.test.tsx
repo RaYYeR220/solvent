@@ -15,6 +15,7 @@ vi.mock("wagmi", () => ({
   useSimulateContract: () => ({ data: undefined, isLoading: false, isError: false }),
   useWatchContractEvent: () => undefined,
   useWriteContract: () => ({ writeContractAsync: vi.fn(), isPending: false }),
+  usePublicClient: () => undefined,
 }));
 
 vi.mock("@tanstack/react-query", () => ({

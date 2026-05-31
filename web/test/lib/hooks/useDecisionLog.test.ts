@@ -4,6 +4,7 @@ import { renderHook } from "@testing-library/react";
 vi.mock("wagmi", () => ({
   useWatchContractEvent: vi.fn(),
   useBlockNumber: vi.fn().mockReturnValue({ data: BigInt(96000000) }),
+  usePublicClient: vi.fn().mockReturnValue(undefined),
 }));
 
 vi.mock("@tanstack/react-query", () => ({
