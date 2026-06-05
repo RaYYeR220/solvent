@@ -7,7 +7,6 @@ import VaultActions from "@/components/VaultActions";
 import ChartPanel from "@/components/ChartPanel";
 import PolicyPanel from "@/components/PolicyPanel";
 import DecisionLog from "@/components/DecisionLog";
-import ForkReplay from "@/components/ForkReplay";
 import Footer from "@/components/Footer";
 import { useVaultState } from "@/lib/hooks/useVaultState";
 import { usePolicy } from "@/lib/hooks/usePolicy";
@@ -90,7 +89,7 @@ export default function DashboardPage() {
 
       <ProtectedPositionStrip />
 
-      <div className="reflow-grid" style={{ display: "grid", gridTemplateColumns: "1.9fr 1fr", gap: 22, marginTop: 20, alignItems: "start" }}>
+      <div className="reflow-grid" style={{ display: "grid", gridTemplateColumns: "1.9fr 1fr", gap: 22, marginTop: 20, alignItems: "stretch" }}>
         <VaultActions />
         <PolicyPanel policy={policyView} />
       </div>
@@ -99,9 +98,8 @@ export default function DashboardPage() {
         <ChartPanel entries={log.entries} />
       </div>
 
-      <div className="reflow-grid" style={{ display: "grid", gridTemplateColumns: "1.9fr 1fr", gap: 22, marginTop: 22, alignItems: "start" }}>
+      <div style={{ marginTop: 22 }}>
         <DecisionLog entries={logEntries} attestationsAttested={log.attestationsTotal} attestationsTotal={log.attestationsTotal} />
-        <ForkReplay />
       </div>
 
       <Footer revision={AGENT_REVISION} drawingId={DRAWING_ID} network={NETWORK} />

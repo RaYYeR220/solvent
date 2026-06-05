@@ -222,7 +222,7 @@ export default function VaultActions() {
 
   // ---------- render ----------
   return (
-    <Panel title={`// vault_actions`} meta="[ EXEC ]">
+    <Panel title={`// vault_actions`} meta="[ EXEC ]" style={{ height: "100%" }}>
       <div className="reflow-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 44 }}>
         {/* ---------------- DEPOSIT COLUMN ---------------- */}
         <section>

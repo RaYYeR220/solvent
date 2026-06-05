@@ -48,7 +48,9 @@ export default function DashboardHeader() {
     <div style={{
       display: "flex",
       justifyContent: "space-between",
-      alignItems: "flex-start",
+      alignItems: "center",
+      gap: 16,
+      flexWrap: "wrap",
       marginBottom: 22,
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -61,38 +63,48 @@ export default function DashboardHeader() {
         </div>
       </div>
 
-      <div className="mono" style={{ textAlign: "right", fontSize: 11, lineHeight: 1.95, color: "var(--text-muted)" }}>
-        <div style={{ color: killColor }}>
+      <div
+        className="mono"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 18,
+          flexWrap: "wrap",
+          fontSize: 11,
+          color: "var(--text-muted)",
+        }}
+      >
+        <span style={{ color: killColor, whiteSpace: "nowrap" }}>
           <StatusDot color={killColor} />
           {killText}
-        </div>
-        <div style={{ color: agentColor }}>
+        </span>
+        <span style={{ opacity: 0.3 }}>·</span>
+        <span style={{ color: agentColor, whiteSpace: "nowrap" }}>
           <StatusDot color={agentColor} />
           {agentText}
-        </div>
-        <div>
-          <ConnectKitButton.Custom>
-            {({ isConnected, show, truncatedAddress, address }) => (
-              <button
-                type="button"
-                onClick={show}
-                style={{
-                  cursor: "pointer",
-                  background: "transparent",
-                  border: "1px solid rgba(124,213,255,.35)",
-                  color: "var(--ink-cyan)",
-                  padding: "2px 10px",
-                  fontFamily: "inherit",
-                  fontSize: 11,
-                  letterSpacing: "0.06em",
-                  borderRadius: 2,
-                }}
-              >
-                {isConnected ? `◇ ${truncatedAddress ?? (address ? `${address.slice(0,6)}…${address.slice(-4)}` : "wallet")} · disconnect` : "◇ connect wallet"}
-              </button>
-            )}
-          </ConnectKitButton.Custom>
-        </div>
+        </span>
+        <ConnectKitButton.Custom>
+          {({ isConnected, show, truncatedAddress, address }) => (
+            <button
+              type="button"
+              onClick={show}
+              style={{
+                cursor: "pointer",
+                background: "transparent",
+                border: "1px solid rgba(124,213,255,.35)",
+                color: "var(--ink-cyan)",
+                padding: "4px 12px",
+                fontFamily: "inherit",
+                fontSize: 11,
+                letterSpacing: "0.06em",
+                borderRadius: 2,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {isConnected ? `◇ ${truncatedAddress ?? (address ? `${address.slice(0,6)}…${address.slice(-4)}` : "wallet")} · disconnect` : "◇ connect wallet"}
+            </button>
+          )}
+        </ConnectKitButton.Custom>
       </div>
     </div>
   );
