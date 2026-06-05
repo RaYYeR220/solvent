@@ -28,9 +28,13 @@ export interface DecisionLogLive {
 }
 
 const MAX_BUFFERED = 50;
-// ~7 days at 2s/block on Mantle. The chart only needs a recent window;
-// fetching further back is wasted RPC budget.
-const HISTORICAL_LOOKBACK_BLOCKS = BigInt(50_000);
+// ~9 days at ~2s/block on Mantle. Wide enough to reach the agent's full
+// attestation history (V1 + V2 era — same agentId 106, same registry) so the
+// chart + decision_log paint immediately on first load rather than waiting for
+// the next hourly tick. rpc.mantle.xyz serves this range in a single getLogs
+// call (verified ~270 events for agent 106 over ~350k blocks), so no pagination
+// needed. The agentId filter keeps other agents' feedback out.
+const HISTORICAL_LOOKBACK_BLOCKS = BigInt(400_000);
 
 // Single-event ABI fragment for getLogs — equivalent to the entry in
 // `reputationRegistryAbi` but typed as a literal so viem's argument-type

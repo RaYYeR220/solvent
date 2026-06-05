@@ -90,7 +90,7 @@ export default function DashboardPage() {
 
       <ProtectedPositionStrip />
 
-      <div className="reflow-grid" style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 22, marginTop: 20 }}>
+      <div className="reflow-grid" style={{ display: "grid", gridTemplateColumns: "1.9fr 1fr", gap: 22, marginTop: 20, alignItems: "start" }}>
         <VaultActions />
         <PolicyPanel policy={policyView} />
       </div>
@@ -99,7 +99,7 @@ export default function DashboardPage() {
         <ChartPanel entries={log.entries} />
       </div>
 
-      <div className="reflow-grid" style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 22, marginTop: 22 }}>
+      <div className="reflow-grid" style={{ display: "grid", gridTemplateColumns: "1.9fr 1fr", gap: 22, marginTop: 22, alignItems: "start" }}>
         <DecisionLog entries={logEntries} attestationsAttested={log.attestationsTotal} attestationsTotal={log.attestationsTotal} />
         <ForkReplay />
       </div>

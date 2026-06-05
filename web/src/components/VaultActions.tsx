@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { ConnectKitButton } from "connectkit";
 import { useAccount, useReadContract } from "wagmi";
 import Panel from "./Panel";
@@ -39,15 +39,6 @@ function rawToInput(raw: bigint, decimals: number): string {
   if (frac === BigInt(0)) return whole.toString();
   const fracStr = frac.toString().padStart(decimals, "0").replace(/0+$/, "");
   return fracStr.length > 0 ? `${whole.toString()}.${fracStr}` : whole.toString();
-}
-
-function fmtAgo(ms: number): string {
-  if (ms < 30_000) return "just now";
-  const m = Math.floor(ms / 60_000);
-  if (m < 1) return "just now";
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  return `${h}h ago`;
 }
 
 // ---------- shared style atoms ----------
@@ -98,7 +89,7 @@ const sectionTitleStyle: React.CSSProperties = {
   color: "var(--ink-cyan)",
   opacity: 0.75,
   textTransform: "lowercase",
-  marginBottom: 10,
+  marginBottom: 14,
 };
 
 const labelStyle: React.CSSProperties = {
@@ -108,40 +99,15 @@ const labelStyle: React.CSSProperties = {
   textTransform: "uppercase",
 };
 
-// ---------- session log ----------
-
-type LogKind = "approved" | "deposited" | "withdrawn";
-interface SessionLogEntry {
-  kind: LogKind;
-  amount: bigint;
-  decimals: number;
-  symbol: string;
-  timestamp: number;
-}
-
-function SessionLog({ entries, now }: { entries: SessionLogEntry[]; now: number }) {
-  const recent = entries.slice(-2).reverse();
-  return (
-    <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px dashed rgba(124,213,255,.18)" }}>
-      <div className="mono" style={{ ...sectionTitleStyle, marginBottom: 8 }}>{"// session_log"}</div>
-      {recent.length === 0 ? (
-        <div className="mono" style={{ fontSize: 11, color: "var(--text-muted)", opacity: 0.7 }}>
-          {"// no actions yet  ·  perform a deposit or withdrawal to see history"}
-        </div>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          {recent.map((e, i) => (
-            <div key={i} className="mono" style={{ fontSize: 11.5, color: "var(--text-strong)" }}>
-              <span style={{ color: "var(--ink-cyan)" }}>✓ {e.kind.padEnd(10, " ")}</span>
-              <span>{fmtUnits(e.amount, e.decimals, 4)} {e.symbol}</span>
-              <span style={{ color: "var(--text-muted)" }}>  ·  {fmtAgo(now - e.timestamp)}</span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+const receiveBoxStyle: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "baseline",
+  padding: "10px 12px",
+  border: "1px solid rgba(124,213,255,.15)",
+  background: "rgba(124,213,255,.02)",
+  borderRadius: 2,
+};
 
 // ---------- component ----------
 
@@ -153,14 +119,6 @@ export default function VaultActions() {
 
   const [depositAmount, setDepositAmount] = useState<string>("");
   const [withdrawAmount, setWithdrawAmount] = useState<string>("");
-  const [sessionLog, setSessionLog] = useState<SessionLogEntry[]>([]);
-
-  // tick `now` every 30s so session_log "X ago" strings stay fresh.
-  const [now, setNow] = useState<number>(() => Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 30_000);
-    return () => clearInterval(id);
-  }, []);
 
   // Wallet USDT0 balance (for deposit MAX + bal label).
   const walletBalRead = useReadContract({
@@ -195,69 +153,20 @@ export default function VaultActions() {
   const wdAmountRaw = parseAmount(withdrawAmount, SHARE_DECIMALS);
   const safeMode = vault.safeAssetBalance > BigInt(0);
 
-  // --- session_log: append on state transitions to "done" ---
-  const lastDepStateRef = useRef(dep.state);
-  const lastWdStateRef = useRef(wd.state);
-  // Snapshot the amount that was in-flight at the moment of submission. We can
-  // capture from current input state since the buttons stay disabled
-  // while in-flight, so the value cannot change underneath us.
-  const pendingDepAmountRef = useRef<bigint>(BigInt(0));
-  const pendingApproveAmountRef = useRef<bigint>(BigInt(0));
-  const pendingWdAmountRef = useRef<bigint>(BigInt(0));
-
-  useEffect(() => {
-    const prev = lastDepStateRef.current;
-    const curr = dep.state;
-    lastDepStateRef.current = curr;
-    if (prev === "approving" && curr === "approve-confirmed") {
-      setSessionLog((log) => [...log, {
-        kind: "approved",
-        amount: pendingApproveAmountRef.current,
-        decimals: ASSET_DECIMALS,
-        symbol: ASSET_SYMBOL,
-        timestamp: Date.now(),
-      }]);
-    }
-    if (prev === "depositing" && curr === "done") {
-      setSessionLog((log) => [...log, {
-        kind: "deposited",
-        amount: pendingDepAmountRef.current,
-        decimals: ASSET_DECIMALS,
-        symbol: ASSET_SYMBOL,
-        timestamp: Date.now(),
-      }]);
-    }
-  }, [dep.state]);
-
-  useEffect(() => {
-    const prev = lastWdStateRef.current;
-    const curr = wd.state;
-    lastWdStateRef.current = curr;
-    if (prev === "redeeming" && curr === "done") {
-      setSessionLog((log) => [...log, {
-        kind: "withdrawn",
-        amount: pendingWdAmountRef.current,
-        decimals: SHARE_DECIMALS,
-        symbol: SHARE_SYMBOL,
-        timestamp: Date.now(),
-      }]);
-    }
-  }, [wd.state]);
-
   // --- wallet-not-connected fallback ---
   if (!isConnected) {
     return (
-      <Panel title={`// vault_actions`} meta="[ EXEC ]" style={{ height: "100%" }}>
+      <Panel title={`// vault_actions`} meta="[ EXEC ]">
         <div style={{
           display: "flex", flexDirection: "column", alignItems: "center",
-          justifyContent: "center", gap: 16, padding: "40px 0", minHeight: 240,
+          justifyContent: "center", gap: 16, padding: "40px 0", minHeight: 220,
         }}>
           <div className="mono" style={{ fontSize: 12, color: "var(--text-muted)", textAlign: "center" }}>
             Connect a wallet to deposit or withdraw.
           </div>
           <ConnectKitButton.Custom>
             {({ show }) => (
-              <button type="button" onClick={show} style={primaryBtnStyle(false)}>
+              <button type="button" onClick={show} style={{ ...primaryBtnStyle(false), width: "auto", padding: "12px 28px" }}>
                 [ connect wallet ]
               </button>
             )}
@@ -283,10 +192,8 @@ export default function VaultActions() {
   const onDepPrimary = async () => {
     if (depAmountRaw === BigInt(0)) return;
     if (depNeedsApprove) {
-      pendingApproveAmountRef.current = depAmountRaw;
       await dep.approve(depAmountRaw);
     } else {
-      pendingDepAmountRef.current = depAmountRaw;
       await dep.deposit(depAmountRaw);
     }
   };
@@ -301,7 +208,6 @@ export default function VaultActions() {
 
   const onWdPrimary = async () => {
     if (wdAmountRaw === BigInt(0) || !address) return;
-    pendingWdAmountRef.current = wdAmountRaw;
     if (safeMode) {
       await wd.redeemAll(wdAmountRaw, address);
     } else {
@@ -309,31 +215,15 @@ export default function VaultActions() {
     }
   };
 
-  // Pro-rata mix for safe-mode withdraw display.
-  // shares/totalSupply * each vault balance.
-  let withdrawReceive: React.ReactNode;
-  if (safeMode && totalSupply > BigInt(0) && wdAmountRaw > BigInt(0)) {
-    const riskOut = (wdAmountRaw * vault.riskAssetBalance) / totalSupply;
-    const safeOut = (wdAmountRaw * vault.safeAssetBalance) / totalSupply;
-    withdrawReceive = (
-      <span>
-        ~ {fmtUnits(riskOut, ASSET_DECIMALS, 4)} {ASSET_SYMBOL}
-        {" + "}
-        {fmtUnits(safeOut, ASSET_DECIMALS, 4)} {SAFE_SYMBOL}
-      </span>
-    );
-  } else {
-    withdrawReceive = (
-      <span>
-        {fmtUnits(wdAmountRaw, SHARE_DECIMALS, 4)} {ASSET_SYMBOL}
-      </span>
-    );
-  }
+  // Safe-mode pro-rata mix for withdraw display: shares/totalSupply * each vault balance.
+  const showSafeMix = safeMode && totalSupply > BigInt(0) && wdAmountRaw > BigInt(0);
+  const riskOut = showSafeMix ? (wdAmountRaw * vault.riskAssetBalance) / totalSupply : BigInt(0);
+  const safeOut = showSafeMix ? (wdAmountRaw * vault.safeAssetBalance) / totalSupply : BigInt(0);
 
   // ---------- render ----------
   return (
-    <Panel title={`// vault_actions`} meta="[ EXEC ]" style={{ height: "100%" }}>
-      <div className="reflow-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 22 }}>
+    <Panel title={`// vault_actions`} meta="[ EXEC ]">
+      <div className="reflow-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 44 }}>
         {/* ---------------- DEPOSIT COLUMN ---------------- */}
         <section>
           <div className="mono" style={sectionTitleStyle}>{"// deposit"}</div>
@@ -365,21 +255,17 @@ export default function VaultActions() {
           </div>
           <div className="mono" style={{ ...labelStyle, marginTop: 4, opacity: 0.6 }}>{ASSET_SYMBOL}</div>
 
-          <div style={{ textAlign: "center", margin: "12px 0 8px", color: "var(--ink-cyan)", opacity: 0.55, fontSize: 14 }}>↓</div>
+          <div style={{ textAlign: "center", margin: "14px 0 10px", color: "var(--ink-cyan)", opacity: 0.55, fontSize: 14 }}>↓</div>
 
           <div className="mono" style={{ ...labelStyle, marginBottom: 6 }}>YOU RECEIVE</div>
-          <div className="mono" style={{
-            display: "flex", justifyContent: "space-between", alignItems: "baseline",
-            padding: "10px 12px", border: "1px solid rgba(124,213,255,.15)",
-            background: "rgba(124,213,255,.02)", borderRadius: 2,
-          }}>
+          <div className="mono" style={receiveBoxStyle}>
             <span style={{ fontSize: 18, color: "var(--text-strong)" }}>
               {fmtUnits(depAmountRaw, ASSET_DECIMALS, 4)}
             </span>
             <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{SHARE_SYMBOL}</span>
           </div>
 
-          <div style={{ marginTop: 14 }}>
+          <div style={{ marginTop: 16 }}>
             <button
               type="button"
               onClick={onDepPrimary}
@@ -428,18 +314,23 @@ export default function VaultActions() {
           </div>
           <div className="mono" style={{ ...labelStyle, marginTop: 4, opacity: 0.6 }}>{SHARE_SYMBOL}</div>
 
-          <div style={{ textAlign: "center", margin: "12px 0 8px", color: "var(--ink-cyan)", opacity: 0.55, fontSize: 14 }}>↓</div>
+          <div style={{ textAlign: "center", margin: "14px 0 10px", color: "var(--ink-cyan)", opacity: 0.55, fontSize: 14 }}>↓</div>
 
           <div className="mono" style={{ ...labelStyle, marginBottom: 6 }}>YOU RECEIVE</div>
-          <div className="mono" style={{
-            display: "flex", justifyContent: "space-between", alignItems: "baseline",
-            padding: "10px 12px", border: "1px solid rgba(124,213,255,.15)",
-            background: "rgba(124,213,255,.02)", borderRadius: 2,
-          }}>
-            <span style={{ fontSize: safeMode && wdAmountRaw > BigInt(0) ? 13 : 18, color: "var(--text-strong)" }}>
-              {withdrawReceive}
-            </span>
-          </div>
+          {showSafeMix ? (
+            <div className="mono" style={{ ...receiveBoxStyle, flexWrap: "wrap", gap: 4 }}>
+              <span style={{ fontSize: 13, color: "var(--text-strong)" }}>
+                ~ {fmtUnits(riskOut, ASSET_DECIMALS, 4)} {ASSET_SYMBOL} + {fmtUnits(safeOut, ASSET_DECIMALS, 4)} {SAFE_SYMBOL}
+              </span>
+            </div>
+          ) : (
+            <div className="mono" style={receiveBoxStyle}>
+              <span style={{ fontSize: 18, color: "var(--text-strong)" }}>
+                {fmtUnits(wdAmountRaw, SHARE_DECIMALS, 4)}
+              </span>
+              <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{ASSET_SYMBOL}</span>
+            </div>
+          )}
 
           {safeMode && (
             <div className="mono" style={{ fontSize: 10.5, color: "var(--warm-gold)", marginTop: 6, opacity: 0.85 }}>
@@ -447,7 +338,7 @@ export default function VaultActions() {
             </div>
           )}
 
-          <div style={{ marginTop: 14 }}>
+          <div style={{ marginTop: 16 }}>
             <button
               type="button"
               onClick={onWdPrimary}
@@ -465,8 +356,6 @@ export default function VaultActions() {
           )}
         </section>
       </div>
-
-      <SessionLog entries={sessionLog} now={now} />
     </Panel>
   );
 }

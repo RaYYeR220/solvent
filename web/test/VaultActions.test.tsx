@@ -78,14 +78,6 @@ describe("VaultActions", () => {
     expect(queryByRole("button", { name: /^withdraw$/i })).toBeNull();
   });
 
-  it("session_log shows empty-state placeholder by default", () => {
-    useAccountMock.mockReturnValue({ address: "0xUSER", isConnected: true });
-    useReadContractMock.mockReturnValue({ data: BigInt(0), refetch: vi.fn() });
-    const { container } = render(<VaultActions />);
-    expect(container.textContent?.toLowerCase()).toContain("session_log");
-    expect(container.textContent?.toLowerCase()).toContain("no actions yet");
-  });
-
   it("MAX button on deposit side sets amount to the wallet USDT0 balance", () => {
     useAccountMock.mockReturnValue({ address: "0xUSER", isConnected: true });
     // First read = walletBalance, second = allowance, third = totalSupply.
