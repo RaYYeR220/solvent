@@ -11,19 +11,19 @@ const CARDS: Card[] = [
     step: "01",
     title: "Signal",
     description:
-      "Read Price (DEX) and NAV (Ondo RWADynamicOracle) every tick. Compute divergence in basis points. Cross-check with Pyth/RedStone where available.",
+      "Read market price (DEX) against NAV every tick and compute divergence in basis points. The thesis targets RWA NAV (Ondo oracle); the live vault runs on USDT0/USDC today.",
   },
   {
     step: "02",
     title: "Assess",
     description:
-      "Classify the regime: CALM (under early_trig), EARLY (between triggers), or TERMINAL (above term_trig). Choose an action bounded by your policy.",
+      "Classify the regime: CALM (under early_trig), EARLY (between triggers), or TERMINAL (above term_trig). Choose an action bounded by your on-chain policy.",
   },
   {
     step: "03",
     title: "Execute",
     description:
-      "Bridge to safe-asset via lending or swap. Every decision is signed and posted to an ERC-8004 attestation registry. Verifiable on-chain trace.",
+      "Swap to the safe asset (USDC) the moment divergence crosses policy. Every decision is signed and posted to an ERC-8004 attestation registry — a verifiable on-chain trace.",
   },
 ];
 
