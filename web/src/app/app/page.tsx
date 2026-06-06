@@ -29,7 +29,8 @@ function shortHash(hash: string): string {
 function mapReasonCode(raw: string | undefined): LogEntry["reasonCode"] {
   switch (raw) {
     case "observe":
-    case "watch":            return "observe";
+    case "watch":
+    case "calm-idle":        return "observe";
     case "liquidity-bridge":
     case "bridge":           return "bridge";
     case "unwind":           return "unwind";
@@ -37,7 +38,6 @@ function mapReasonCode(raw: string | undefined): LogEntry["reasonCode"] {
     case "terminal-exit":
     case "swap":             return "swap";
     case "park-calm":
-    case "calm-idle":
     default:                 return "park-calm";
   }
 }
