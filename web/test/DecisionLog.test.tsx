@@ -5,7 +5,7 @@ import { mockLog, mockVault, type LogEntry } from "../src/lib/mockData";
 
 describe("DecisionLog", () => {
   it("renders all 5 entries with timestamps and tx hashes", () => {
-    render(<DecisionLog entries={mockLog} attestationsAttested={mockVault.attestationsAttested} attestationsTotal={mockVault.attestationsTotal} />);
+    render(<DecisionLog entries={mockLog} attestationsTotal={mockVault.attestationsTotal} />);
     for (const entry of mockLog) {
       expect(screen.getByText(entry.timestamp)).toBeInTheDocument();
       expect(screen.getByText(entry.txShort)).toBeInTheDocument();
@@ -13,7 +13,7 @@ describe("DecisionLog", () => {
   });
 
   it("highlights the observe row in warm gold", () => {
-    const { container } = render(<DecisionLog entries={mockLog} attestationsAttested={11} attestationsTotal={11} />);
+    const { container } = render(<DecisionLog entries={mockLog} attestationsTotal={11} />);
     const observeRow = container.querySelector('[data-row="observe"]') as HTMLElement | null;
     expect(observeRow).not.toBeNull();
     // background should reference the observe tint
@@ -21,8 +21,8 @@ describe("DecisionLog", () => {
   });
 
   it("shows the attestation count meta", () => {
-    render(<DecisionLog entries={mockLog} attestationsAttested={11} attestationsTotal={11} />);
-    expect(screen.getByText(/11\/11 attested/)).toBeInTheDocument();
+    render(<DecisionLog entries={mockLog} attestationsTotal={11} />);
+    expect(screen.getByText(/11 attested/)).toBeInTheDocument();
   });
 });
 
@@ -36,7 +36,7 @@ describe("DecisionLog with txHash", () => {
       txHash: "0x84abc",
     }];
     const { container } = render(
-      <DecisionLog entries={entries} attestationsAttested={1} attestationsTotal={1} />,
+      <DecisionLog entries={entries} attestationsTotal={1} />,
     );
     const link = container.querySelector("a");
     expect(link?.getAttribute("href")).toContain("/tx/0x84abc");

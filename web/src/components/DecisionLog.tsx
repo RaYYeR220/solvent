@@ -3,7 +3,6 @@ import Panel from "./Panel";
 
 interface DecisionLogProps {
   entries: LogEntry[];
-  attestationsAttested: number;
   attestationsTotal: number;
 }
 
@@ -15,11 +14,11 @@ const REASON_COLOUR: Record<LogEntry["reasonCode"], string> = {
   swap: "var(--ink-cyan-bright)",
 };
 
-export default function DecisionLog({ entries, attestationsAttested, attestationsTotal }: DecisionLogProps) {
+export default function DecisionLog({ entries, attestationsTotal }: DecisionLogProps) {
   return (
     <Panel
       title="// decision_log · last 5"
-      meta={`[ ERC-8004  ·  ${attestationsAttested}/${attestationsTotal} attested ]`}
+      meta={`[ on-chain  ·  ${attestationsTotal} attested ]`}
     >
       <div className="mono" style={{ fontSize: 11.5 }}>
         {entries.map((entry, i) => {

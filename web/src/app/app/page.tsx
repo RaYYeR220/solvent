@@ -7,6 +7,7 @@ import VaultActions from "@/components/VaultActions";
 import ChartPanel from "@/components/ChartPanel";
 import PolicyPanel from "@/components/PolicyPanel";
 import DecisionLog from "@/components/DecisionLog";
+import ReputationPanel from "@/components/ReputationPanel";
 import Footer from "@/components/Footer";
 import { useVaultState } from "@/lib/hooks/useVaultState";
 import { usePolicy } from "@/lib/hooks/usePolicy";
@@ -98,8 +99,9 @@ export default function DashboardPage() {
         <ChartPanel entries={log.entries} />
       </div>
 
-      <div style={{ marginTop: 22 }}>
-        <DecisionLog entries={logEntries} attestationsAttested={log.attestationsTotal} attestationsTotal={log.attestationsTotal} />
+      <div className="reflow-grid" style={{ display: "grid", gridTemplateColumns: "1.9fr 1fr", gap: 22, marginTop: 22, alignItems: "stretch" }}>
+        <DecisionLog entries={logEntries} attestationsTotal={log.attestationsTotal} />
+        <ReputationPanel />
       </div>
 
       <Footer revision={AGENT_REVISION} drawingId={DRAWING_ID} network={NETWORK} />
