@@ -101,7 +101,7 @@ export default function DashboardHeader() {
                 whiteSpace: "nowrap",
               }}
             >
-              {isConnected ? `◇ ${truncatedAddress ?? (address ? `${address.slice(0,6)}…${address.slice(-4)}` : "wallet")} · disconnect` : "◇ connect wallet"}
+              {isConnected ? `◇ ${truncatedAddress ?? (address ? `${address.slice(0,6)}…${address.slice(-4)}` : "wallet")}` : "◇ connect wallet"}
             </button>
           )}
         </ConnectKitButton.Custom>
