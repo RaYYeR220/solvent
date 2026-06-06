@@ -69,6 +69,20 @@ export default function ChartPanel({ entries }: ChartPanelProps) {
     return pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(2)},${clampToView(p.mkt).toFixed(2)}`).join(" ");
   }, [pts]);
 
+  // Area fill under the MKT line — gives the chart visual body so a calm
+  // (flat ~1.000) series doesn't read as a lonely hairline.
+  const areaPath = useMemo(() => {
+    if (pts.length === 0) return "";
+    const first = pts[0].x.toFixed(2);
+    const last = pts[pts.length - 1].x.toFixed(2);
+    return `${mktPath} L${last},${VIEW_H} L${first},${VIEW_H} Z`;
+  }, [pts, mktPath]);
+
+  // viewBox → percentage helpers for crisp HTML overlays (axis labels, dots)
+  // that must NOT inherit the SVG's non-uniform preserveAspectRatio stretch.
+  const leftPct = (x: number) => (x / VIEW_W) * 100;
+  const topPct = (value: number) => (clampToView(value) / VIEW_H) * 100;
+
   function onMove(e: React.MouseEvent<SVGSVGElement>) {
     if (pts.length === 0) return;
     const svg = e.currentTarget;
@@ -99,40 +113,62 @@ export default function ChartPanel({ entries }: ChartPanelProps) {
   }
 
   const hover = hoverIdx !== null ? pts[hoverIdx] : null;
+  const last = pts[pts.length - 1];
 
   return (
     <Panel title="// price_nav_feed · last N attestations" meta="[ CH-A ]">
-      <div style={{ position: "relative" }}>
+      <div style={{ position: "relative", height: 180 }}>
         <svg
           width="100%"
-          height="160"
+          height="180"
           viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
           preserveAspectRatio="none"
-          style={{ display: "block", marginBottom: 10 }}
+          style={{ display: "block", position: "absolute", inset: 0 }}
           onMouseMove={onMove}
           onMouseLeave={onLeave}
         >
           <defs>
             <linearGradient id="chart-grad-a" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--ink-cyan)" stopOpacity="0.20" />
+              <stop offset="0%" stopColor="var(--ink-cyan)" stopOpacity="0.22" />
               <stop offset="100%" stopColor="var(--ink-cyan)" stopOpacity="0" />
             </linearGradient>
           </defs>
-          <line x1="0" y1={VIEW_H / 2} x2={VIEW_W} y2={VIEW_H / 2} stroke="var(--ink-cyan)" strokeWidth="0.5" strokeDasharray="3,3" opacity="0.4" />
-          <text x="2" y="9" fontSize="6" fill="var(--text-muted)" fontFamily="var(--font-mono), monospace">{TOP_VAL.toFixed(3)}</text>
-          <text x="2" y={VIEW_H / 2 + 4} fontSize="6" fill="var(--text-muted)" fontFamily="var(--font-mono), monospace">NAV 1.000</text>
-          <text x="2" y={VIEW_H - 4} fontSize="6" fill="var(--text-muted)" fontFamily="var(--font-mono), monospace">{BOT_VAL.toFixed(3)}</text>
-          <path d={mktPath} stroke="var(--ink-cyan-bright)" strokeWidth="1.5" fill="none" strokeLinejoin="round" />
-          <path d={navPath} stroke="var(--text-strong)" strokeWidth="1.2" fill="none" strokeLinejoin="round" opacity="0.8" />
-          <circle cx={pts[pts.length - 1].x} cy={clampToView(pts[pts.length - 1].mkt)} r="2.5" fill="var(--ink-cyan-bright)" />
+          {/* mid grid line */}
+          <line x1="0" y1={VIEW_H / 2} x2={VIEW_W} y2={VIEW_H / 2} stroke="var(--ink-cyan)" strokeWidth="0.4" strokeDasharray="3,3" opacity="0.35" vectorEffect="non-scaling-stroke" />
+          {/* area fill under MKT */}
+          <path d={areaPath} fill="url(#chart-grad-a)" stroke="none" />
+          {/* MKT + NAV lines — non-scaling stroke keeps width uniform despite the stretch */}
+          <path d={mktPath} stroke="var(--ink-cyan-bright)" strokeWidth="2" fill="none" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+          <path d={navPath} stroke="var(--text-strong)" strokeWidth="1.4" fill="none" strokeLinejoin="round" strokeLinecap="round" opacity="0.75" vectorEffect="non-scaling-stroke" strokeDasharray="2,2" />
+          {/* hover crosshair (vertical) */}
           {hover && (
-            <>
-              <line x1={hover.x} y1="0" x2={hover.x} y2={VIEW_H} stroke="var(--ink-cyan)" strokeWidth="0.5" opacity="0.6" />
-              <circle cx={hover.x} cy={clampToView(hover.nav)} r="1.5" fill="var(--text-strong)" />
-              <circle cx={hover.x} cy={clampToView(hover.mkt)} r="1.5" fill="var(--ink-cyan-bright)" />
-            </>
+            <line x1={hover.x} y1="0" x2={hover.x} y2={VIEW_H} stroke="var(--ink-cyan)" strokeWidth="1" opacity="0.6" vectorEffect="non-scaling-stroke" />
           )}
         </svg>
+
+        {/* axis labels — HTML overlay so they render crisp (SVG text would be stretched by preserveAspectRatio=none) */}
+        <div className="mono" style={{ position: "absolute", top: 2, left: 4, fontSize: 10, color: "var(--text-muted)", opacity: 0.7, pointerEvents: "none" }}>{TOP_VAL.toFixed(3)}</div>
+        <div className="mono" style={{ position: "absolute", top: "50%", left: 4, transform: "translateY(-50%)", fontSize: 10, color: "var(--text-muted)", opacity: 0.5, pointerEvents: "none" }}>NAV 1.000</div>
+        <div className="mono" style={{ position: "absolute", bottom: 2, left: 4, fontSize: 10, color: "var(--text-muted)", opacity: 0.7, pointerEvents: "none" }}>{BOT_VAL.toFixed(3)}</div>
+
+        {/* latest-point dot (HTML so it stays a circle, not a stretched ellipse) */}
+        <div style={{
+          position: "absolute",
+          left: `calc(${leftPct(last.x)}% - 4px)`,
+          top: `calc(${topPct(last.mkt)}% - 4px)`,
+          width: 8, height: 8, borderRadius: "50%",
+          background: "var(--ink-cyan-bright)",
+          boxShadow: "0 0 8px rgba(124,213,255,.7)",
+          pointerEvents: "none",
+        }} />
+
+        {/* hover dots (HTML circles) */}
+        {hover && (
+          <>
+            <div style={{ position: "absolute", left: `calc(${leftPct(hover.x)}% - 3px)`, top: `calc(${topPct(hover.mkt)}% - 3px)`, width: 6, height: 6, borderRadius: "50%", background: "var(--ink-cyan-bright)", pointerEvents: "none" }} />
+            <div style={{ position: "absolute", left: `calc(${leftPct(hover.x)}% - 3px)`, top: `calc(${topPct(hover.nav)}% - 3px)`, width: 6, height: 6, borderRadius: "50%", background: "var(--text-strong)", pointerEvents: "none" }} />
+          </>
+        )}
 
         {hover && (
           <div
@@ -167,9 +203,9 @@ export default function ChartPanel({ entries }: ChartPanelProps) {
         )}
       </div>
 
-      <div className="mono" style={{ display: "flex", gap: 16, fontSize: 11, color: "var(--text-muted)" }}>
-        <span>MKT line=<span style={{ color: "var(--ink-cyan-bright)" }}>cyan</span></span>
-        <span>NAV line=<span style={{ color: "var(--text-strong)" }}>white</span></span>
+      <div className="mono" style={{ display: "flex", gap: 16, fontSize: 11, color: "var(--text-muted)", marginTop: 12 }}>
+        <span>MKT=<span style={{ color: "var(--ink-cyan-bright)" }}>cyan</span></span>
+        <span>NAV=<span style={{ color: "var(--text-strong)" }}>white dashed</span></span>
         <span>N={pts.length} attestations</span>
       </div>
     </Panel>
