@@ -204,57 +204,75 @@ function RatingRow({ entry, isLast }: { entry: ReputationEntry; isLast: boolean 
 
 // ---------- component ----------
 
+const colStyle = (withRule: boolean): React.CSSProperties => ({
+  ...(withRule
+    ? { borderLeft: "1px solid rgba(124,213,255,.1)", paddingLeft: 28 }
+    : {}),
+});
+
 export default function ReputationPanel() {
   const rep = useReputation();
   const recent = rep.entries.slice(0, 5);
 
   return (
-    <Panel title="// reputation" meta="[ ERC-8004 ]" style={{ height: "100%" }}>
-      {/* aggregate header */}
-      <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 18 }}>
-        {rep.count > 0 ? (
-          <>
-            <span className="mono" style={{ fontSize: 22, color: "var(--warm-gold)", letterSpacing: "0.04em" }}>
-              {starString(rep.averageStars)}
-            </span>
-            <span className="mono" style={{ fontSize: 20, color: "var(--text-strong)" }}>
-              {rep.averageStars.toFixed(1)}
-            </span>
-            <span className="mono" style={{ ...labelStyle, fontSize: 11 }}>
-              {rep.count} {rep.count === 1 ? "rating" : "ratings"}
-            </span>
-          </>
-        ) : (
-          <span className="mono" style={{ fontSize: 13, color: "var(--text-muted)" }}>
-            — no ratings yet
-          </span>
-        )}
-      </div>
+    <Panel title="// reputation" meta="[ ERC-8004 · depositor feedback ]">
+      <div
+        className="reflow-grid"
+        style={{ display: "grid", gridTemplateColumns: "0.8fr 1.2fr 1.5fr", gap: 28, alignItems: "stretch" }}
+      >
+        {/* ---- col 1: guardian score ---- */}
+        <div>
+          <div className="mono" style={sectionTitleStyle}>{"// guardian_score"}</div>
+          {rep.count > 0 ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <span className="mono" style={{ fontSize: 24, color: "var(--warm-gold)", letterSpacing: "0.06em" }}>
+                {starString(rep.averageStars)}
+              </span>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                <span className="mono" style={{ fontSize: 30, fontWeight: 300, color: "var(--text-strong)" }}>
+                  {rep.averageStars.toFixed(1)}
+                </span>
+                <span className="mono" style={{ ...labelStyle, fontSize: 11 }}>/ 5</span>
+              </div>
+              <span className="mono" style={{ ...labelStyle, fontSize: 11 }}>
+                {rep.count} {rep.count === 1 ? "rating" : "ratings"}
+              </span>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <span className="mono" style={{ fontSize: 24, color: "var(--text-muted)", opacity: 0.5, letterSpacing: "0.06em" }}>
+                ☆☆☆☆☆
+              </span>
+              <span className="mono" style={{ fontSize: 13, color: "var(--text-muted)" }}>no ratings yet</span>
+            </div>
+          )}
+        </div>
 
-      {/* rate form */}
-      <div style={{ marginBottom: 20 }}>
-        <div className="mono" style={sectionTitleStyle}>{"// rate the guardian"}</div>
-        <RateForm />
-      </div>
+        {/* ---- col 2: rate form ---- */}
+        <div style={colStyle(true)}>
+          <div className="mono" style={sectionTitleStyle}>{"// rate the guardian"}</div>
+          <RateForm />
+        </div>
 
-      {/* recent ratings */}
-      <div>
-        <div className="mono" style={sectionTitleStyle}>{"// recent ratings"}</div>
-        {recent.length === 0 ? (
-          <div className="mono" style={{ fontSize: 11, color: "var(--text-muted)", opacity: 0.7 }}>
-            {"// no ratings yet · be the first depositor to rate the guardian"}
-          </div>
-        ) : (
-          <div className="mono" style={{ fontSize: 11.5 }}>
-            {recent.map((entry, i) => (
-              <RatingRow
-                key={entry.txHash || i}
-                entry={entry}
-                isLast={i === recent.length - 1}
-              />
-            ))}
-          </div>
-        )}
+        {/* ---- col 3: recent ratings ---- */}
+        <div style={colStyle(true)}>
+          <div className="mono" style={sectionTitleStyle}>{"// recent ratings"}</div>
+          {recent.length === 0 ? (
+            <div className="mono" style={{ fontSize: 11, color: "var(--text-muted)", opacity: 0.7 }}>
+              {"// no ratings yet · be the first depositor to rate the guardian"}
+            </div>
+          ) : (
+            <div className="mono" style={{ fontSize: 11.5 }}>
+              {recent.map((entry, i) => (
+                <RatingRow
+                  key={entry.txHash || i}
+                  entry={entry}
+                  isLast={i === recent.length - 1}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </Panel>
   );

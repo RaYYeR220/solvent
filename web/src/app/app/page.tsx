@@ -99,10 +99,20 @@ export default function DashboardPage() {
         <ChartPanel entries={log.entries} />
       </div>
 
-      <div className="reflow-grid" style={{ display: "grid", gridTemplateColumns: "1.9fr 1fr", gap: 22, marginTop: 22, alignItems: "stretch" }}>
+      <div style={{ marginTop: 22 }}>
         <DecisionLog entries={logEntries} attestationsTotal={log.attestationsTotal} />
-        <ReputationPanel />
       </div>
+
+      {/* SECTION B · REPUTATION */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "44px 0 22px" }}>
+        <div style={{ flex: 1, height: 1, background: "linear-gradient(to right, transparent, rgba(124,213,255,.27))" }} />
+        <span className="mono" style={{ fontSize: 9.5, letterSpacing: "0.18em", color: "var(--ink-cyan)", opacity: 0.65, textTransform: "uppercase" }}>
+          section B  ·  reputation
+        </span>
+        <div style={{ flex: 1, height: 1, background: "linear-gradient(to left, transparent, rgba(124,213,255,.27))" }} />
+      </div>
+
+      <ReputationPanel />
 
       <Footer revision={AGENT_REVISION} drawingId={DRAWING_ID} network={NETWORK} />
     </DashboardFrame>
