@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useWatchContractEvent } from "wagmi";
+import { useMemo, useState } from "react";
+import { useWatchContractEvent, usePublicClient } from "wagmi";
 import { useQuery } from "@tanstack/react-query";
 import { CONTRACTS, reputationRegistryAbi } from "../contracts";
 import { fetchAttestationJson } from "../ipfs";
@@ -28,9 +28,52 @@ export interface DecisionLogLive {
 }
 
 const MAX_BUFFERED = 50;
+// ~9 days at ~2s/block on Mantle. Wide enough to reach the agent's full
+// attestation history (V1 + V2 era — same agentId 106, same registry) so the
+// chart + decision_log paint immediately on first load rather than waiting for
+// the next hourly tick. rpc.mantle.xyz serves this range in a single getLogs
+// call (verified ~270 events for agent 106 over ~350k blocks), so no pagination
+// needed. The agentId filter keeps other agents' feedback out.
+const HISTORICAL_LOOKBACK_BLOCKS = BigInt(400_000);
+
+// Single-event ABI fragment for getLogs — equivalent to the entry in
+// `reputationRegistryAbi` but typed as a literal so viem's argument-type
+// inference is happy.
+const NEW_FEEDBACK_EVENT = reputationRegistryAbi[0];
 
 export function useDecisionLog(): DecisionLogLive {
   const [events, setEvents] = useState<Array<{ blockNumber: bigint; txHash: string; uri: string }>>([]);
+  const publicClient = usePublicClient();
+
+  // Historical backfill — useWatchContractEvent only sees NEW events from
+  // mount-time forward, so without this the first page load shows an empty
+  // chart + log until the agent's next attestation lands.
+  const historical = useQuery({
+    queryKey: [
+      "historical-attestations",
+      CONTRACTS.reputationRegistry,
+      String(CONTRACTS.agentId),
+    ],
+    queryFn: async (): Promise<Array<{ blockNumber: bigint; txHash: string; uri: string }>> => {
+      if (!publicClient) return [];
+      const latest = await publicClient.getBlockNumber();
+      const fromBlock = latest > HISTORICAL_LOOKBACK_BLOCKS ? latest - HISTORICAL_LOOKBACK_BLOCKS : BigInt(0);
+      const logs = await publicClient.getLogs({
+        address: CONTRACTS.reputationRegistry,
+        event: NEW_FEEDBACK_EVENT,
+        args: { agentId: CONTRACTS.agentId },
+        fromBlock,
+        toBlock: "latest",
+      });
+      return logs.map((l) => ({
+        blockNumber: l.blockNumber as bigint,
+        txHash: l.transactionHash as string,
+        uri: ((l as unknown as { args?: { feedbackURI?: string } }).args?.feedbackURI as string) ?? "",
+      }));
+    },
+    staleTime: 60_000,
+    enabled: !!publicClient,
+  });
 
   useWatchContractEvent({
     address: CONTRACTS.reputationRegistry,
@@ -59,9 +102,23 @@ export function useDecisionLog(): DecisionLogLive {
     pollingInterval: 12_000,
   });
 
+  // Merge historical + live, dedupe by txHash, ascending blockNumber.
+  const allEvents = useMemo(() => {
+    const seen = new Set<string>();
+    const out: Array<{ blockNumber: bigint; txHash: string; uri: string }> = [];
+    for (const e of [...(historical.data ?? []), ...events]) {
+      if (!e.txHash || seen.has(e.txHash)) continue;
+      seen.add(e.txHash);
+      out.push(e);
+    }
+    return out.sort((a, b) =>
+      a.blockNumber < b.blockNumber ? -1 : a.blockNumber > b.blockNumber ? 1 : 0,
+    );
+  }, [historical.data, events]);
+
   // Pad to fixed 5 slots so the 5 useQuery calls happen unconditionally,
   // honouring React's rules of hooks regardless of events.length.
-  const lastFive = events.slice(-5).reverse();
+  const lastFive = allEvents.slice(-5).reverse();
   const slots: Array<{ blockNumber: bigint; txHash: string; uri: string } | undefined> =
     [0, 1, 2, 3, 4].map((i) => lastFive[i]);
 
@@ -87,7 +144,7 @@ export function useDecisionLog(): DecisionLogLive {
 
   return {
     entries: enriched,
-    attestationsTotal: events.length,
-    isLoading: false,
+    attestationsTotal: allEvents.length,
+    isLoading: historical.isLoading,
   };
 }

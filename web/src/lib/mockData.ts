@@ -24,6 +24,10 @@ export interface PolicyView {
   maxLtvPct: number;
   safeAsset: string;
   slippageCapBps: number;
+  // V2 additions
+  allowSwap: boolean;
+  allowBridge: boolean;
+  killSwitch: boolean;
 }
 
 export interface LogEntry {
@@ -69,6 +73,9 @@ export const mockPolicy: PolicyView = {
   maxLtvPct: 50,
   safeAsset: "USDC",
   slippageCapBps: 300,
+  allowSwap: true,
+  allowBridge: false,
+  killSwitch: false,
 };
 
 export const mockLog: LogEntry[] = [

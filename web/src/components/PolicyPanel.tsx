@@ -18,16 +18,19 @@ function buildRows(p: PolicyView): Row[] {
     { label: "max_ltv", value: `${p.maxLtvPct}%`, color: "var(--text-strong)" },
     { label: "safe_asset", value: p.safeAsset, color: "var(--ink-cyan)" },
     { label: "slippage_cap", value: `${p.slippageCapBps} bps`, color: "var(--text-strong)" },
+    { label: "allow_swap", value: p.allowSwap ? "✓" : "✗", color: p.allowSwap ? "var(--ink-cyan)" : "var(--warm-gold)" },
+    { label: "allow_bridge", value: p.allowBridge ? "✓" : "✗", color: p.allowBridge ? "var(--ink-cyan)" : "var(--warm-gold)" },
+    { label: "kill_switch", value: p.killSwitch ? "ON" : "OFF", color: p.killSwitch ? "var(--warm-gold)" : "var(--ink-cyan)" },
   ];
 }
 
 export default function PolicyPanel({ policy }: PolicyPanelProps) {
   const rows = buildRows(policy);
   return (
-    <Panel title="// policy_reg" meta="[ CFG ]">
+    <Panel title="// policy_reg" meta="[ CFG ]" style={{ height: "100%" }}>
       <div
         className="mono"
-        style={{ display: "flex", flexDirection: "column", gap: 10, fontSize: 11.5 }}
+        style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 10, fontSize: 11.5, height: "calc(100% - 24px)" }}
       >
         {rows.map((row, i) => (
           <div key={row.label}>

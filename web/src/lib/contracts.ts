@@ -1,5 +1,5 @@
 import type { Abi } from "viem";
-import vaultAbiJson from "../../../contracts/exports/abis/SolventVault.json" with { type: "json" };
+import vaultAbiJson from "../../../contracts/exports/abis/SolventVaultV2.json" with { type: "json" };
 import attestationAbiJson from "../../../contracts/exports/abis/SolventAttestation.json" with { type: "json" };
 
 function envOrFallback(key: string, fallback: string): string {
@@ -15,7 +15,7 @@ function envOrFallback(key: string, fallback: string): string {
 }
 
 export const CONTRACTS = {
-  vault: envOrFallback("NEXT_PUBLIC_VAULT_ADDRESS", "0x06513470e16a7d6071A12708c38a6fa0ED66469c") as `0x${string}`,
+  vault: envOrFallback("NEXT_PUBLIC_VAULT_ADDRESS", "0xDDEd84Ef1ceA80af70b23B599cC9672a15c57c9f") as `0x${string}`,
   attestation: envOrFallback("NEXT_PUBLIC_ATTEST_ADDRESS", "0x89D3F83B777b245A80baec60277B449B8E72B5D3") as `0x${string}`,
   reputationRegistry: envOrFallback("NEXT_PUBLIC_REP_REGISTRY", "0x8004BAa17C55a88189AE136b182e5fdA19dE9b63") as `0x${string}`,
   asset: envOrFallback("NEXT_PUBLIC_ASSET_ADDRESS", "0x779Ded0c9e1022225f8E0630b35a9b54bE713736") as `0x${string}`,

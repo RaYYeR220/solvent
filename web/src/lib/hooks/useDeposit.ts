@@ -18,8 +18,12 @@ export interface DepositLive {
   approveTxHash: string | undefined;
   depositTxHash: string | undefined;
   error: string | undefined;
-  /** Invoke the full approve-then-deposit flow with the given amount in
-   *  asset-native units (e.g. BigInt(100_000_000) for 100 USDT0 at 6 dec). */
+  /** Approve the vault to spend `amount` of the underlying asset.
+   *  Step 1 of the two-step user flow. */
+  approve: (amount: bigint) => Promise<void>;
+  /** ERC-4626 `deposit(amount, receiver)` — assumes allowance is already
+   *  sufficient (UI gates the button on the live allowance). Step 2 of
+   *  the user flow. */
   deposit: (amount: bigint) => Promise<void>;
 }
 
@@ -40,6 +44,30 @@ export function useDeposit(): DepositLive {
 
   const { writeContractAsync } = useWriteContract();
 
+  const approve = useCallback(async (amount: bigint) => {
+    if (!isConnected || !address) {
+      setState("error");
+      setError("wallet not connected");
+      return;
+    }
+    setError(undefined);
+    try {
+      setState("approving");
+      const txApprove = await writeContractAsync({
+        address: CONTRACTS.asset,
+        abi: erc20Abi,
+        functionName: "approve",
+        args: [CONTRACTS.vault, amount],
+      });
+      setApproveTxHash(txApprove);
+      setState("approve-confirmed");
+      await allowanceRead.refetch();
+    } catch (e) {
+      setState("error");
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  }, [isConnected, address, allowanceRead, writeContractAsync]);
+
   const deposit = useCallback(async (amount: bigint) => {
     if (!isConnected || !address) {
       setState("error");
@@ -48,25 +76,12 @@ export function useDeposit(): DepositLive {
     }
     setError(undefined);
     try {
-      const currentAllowance = (allowanceRead.data as bigint | undefined) ?? BigInt(0);
-      if (currentAllowance < amount) {
-        setState("approving");
-        const txApprove = await writeContractAsync({
-          address: CONTRACTS.asset,
-          abi: erc20Abi,
-          functionName: "approve",
-          args: [CONTRACTS.vault, amount],
-        });
-        setApproveTxHash(txApprove);
-        setState("approve-confirmed");
-        await allowanceRead.refetch();
-      }
       setState("depositing");
       const txDeposit = await writeContractAsync({
         address: CONTRACTS.vault,
         abi: vaultAbi,
         functionName: "deposit",
-        args: [amount],
+        args: [amount, address],
       });
       setDepositTxHash(txDeposit);
       setState("done");
@@ -74,7 +89,7 @@ export function useDeposit(): DepositLive {
       setState("error");
       setError(e instanceof Error ? e.message : String(e));
     }
-  }, [isConnected, address, allowanceRead, writeContractAsync]);
+  }, [isConnected, address, writeContractAsync]);
 
   return {
     state,
@@ -82,6 +97,7 @@ export function useDeposit(): DepositLive {
     approveTxHash,
     depositTxHash,
     error,
+    approve,
     deposit,
   };
 }

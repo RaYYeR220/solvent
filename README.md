@@ -9,10 +9,12 @@ Track 3 (AI × RWA) submission to the **Mantle Turing Test 2026** hackathon.
 
 Solvent is an autonomous on-chain agent that monitors a Real-World Asset
 (USDY/USDT0) vault every hour, watching the spread between the asset's NAV
-and DEX market price. When divergence crosses policy thresholds, the agent
-executes a pre-approved protective action — exit to a safe asset via DEX,
-or post collateral to lending and borrow safe asset (bridge) — and writes
-a verifiable attestation to the ERC-8004 ReputationRegistry that Mantle
+and DEX market price. The vault (`SolventVaultV2`) is a permissionless
+ERC-4626 — anyone with USDT0 on Mantle can deposit and mint `svUSDT0`
+shares. When divergence crosses policy thresholds, the agent executes a
+pre-approved protective action — exit to a safe asset via DEX, or post
+collateral to lending and borrow safe asset (bridge) — and writes a
+verifiable attestation to the ERC-8004 ReputationRegistry that Mantle
 deployed in Feb 2026 as Internet-of-Agents infrastructure.
 
 The "Verifiable Guardian" thesis: an autonomous agent operating real funds
@@ -62,7 +64,13 @@ on both transient recoveries and terminal collapses.
 ```
 
 **Contracts** (Foundry, Solidity 0.8.24) — `contracts/`:
-- `SolventVault` — custody + on-chain policy enforcement (kill switch, slippage caps, LTV bounds, allowed-action bitmap)
+- `SolventVaultV2` — ERC-4626 vault. Shares (`svUSDT0`) mint 1:1 on deposit.
+  `totalAssets()` counts the policy safe-asset balance at nominal 1:1 so
+  share value is preserved across `SWAP_TO_SAFE`. Adds
+  `redeemAll(shares, receiver)` for the safe-mode mixed-asset redemption
+  path. Same agent + policy + attestation surface as V1.
+- `SolventVault` (V1) — custody-only deployer vault. Kept on-chain as a
+  deprecated reference; kill-switched 2026-05-30.
 - `SolventAttestation` — append-only decision log; mirrors each record to ERC-8004 ReputationRegistry via try/catch
 - `AgniDexAdapter` — wraps Agni V3 SwapRouter behind a V2-shaped IDexRouter
 - `InitLendingAdapter` — wraps INIT Capital positions behind Aave-style ILendingVenue
@@ -83,8 +91,9 @@ on both transient recoveries and terminal collapses.
 | | |
 |---|---|
 | Dashboard | https://solvent-three.vercel.app |
-| Vault on MantleScan | https://mantlescan.xyz/address/0x06513470e16a7d6071A12708c38a6fa0ED66469c |
-| Attestation contract | https://mantlescan.xyz/address/0x89D3F83B777b245A80baec60277B449B8E72B5D3 |
+| SolventVaultV2 (active) | https://mantlescan.xyz/address/0xDDEd84Ef1ceA80af70b23B599cC9672a15c57c9f |
+| SolventVault V1 (deprecated) | https://mantlescan.xyz/address/0x06513470e16a7d6071A12708c38a6fa0ED66469c |
+| SolventAttestation | https://mantlescan.xyz/address/0x89D3F83B777b245A80baec60277B449B8E72B5D3 |
 | Agent EOA (decision tx stream) | https://mantlescan.xyz/address/0x8D8BB77189a95eFF0D45EB08A75e35DcA8a1432c |
 | ERC-8004 ReputationRegistry | https://mantlescan.xyz/address/0x8004BAa17C55a88189AE136b182e5fdA19dE9b63 |
 

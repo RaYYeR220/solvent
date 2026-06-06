@@ -46,24 +46,35 @@
 > Same engine on the transient-depeg scenario reacts at the 4% mark — exits
 > early, then attests calmly through the recovery. Same code, different world.
 
-## 3:00–4:30 — Live agent on Mantle (90s)
+## 3:00–4:00 — Live deposit demo (60s)
+
+> [Open dashboard URL in browser]
+
+> Solvent V2 is a permissionless ERC-4626 vault. Anyone with USDT0 on Mantle
+> can deposit and mint svUSDT0 shares. Click "connect wallet" in the top
+> right — ConnectKit modal, pick any wallet, sign.
+
+> [Connected]
+
+> Now I'm in the same dashboard the agent watches. Type "10" in the deposit
+> tab — that's 10 USDT0. First click approves the spend; second click
+> mints 10 svUSDT0 shares. Tx links go straight to MantleScan.
+
+> Withdrawing's the same shape. If the agent has fired SWAP_TO_SAFE, the
+> vault holds USDC instead of USDT0; the WITHDRAW button auto-routes to
+> `redeemAll` for a pro-rata USDT0+USDC payout — and the panel tells you
+> that's what'll happen.
+
+## 4:00–4:30 — Live agent on Mantle (30s)
 
 > [Switch to MantleScan tab on the agent EOA address]
 
-> This is the agent's actual transaction history. Every entry is an
-> `attestObservation` or `executeProtectiveAction` call into the vault. Click
-> any of them and you see the URI field — that's a Pinata-pinned JSON
-> payload with the signal snapshot, the regime classification, and the
-> decision. The on-chain `feedbackHash` commits to those bytes.
-
-> [Switch to dashboard]
-
-> The decision log panel here pulls the same events live via wagmi —
-> `useWatchContractEvent` on ReputationRegistry filtered by our agentId,
-> resolves each URI through Pinata, renders the regime and action. Right
-> now the agent is in CALM regime because the live USDT0/USDC pool has
-> zero liquidity — we'd see EARLY/TERMINAL the moment a real divergence
-> appeared, and the agent already proved on the fork it knows what to do.
+> Agent's actual tx history — every entry is an `attestObservation` or
+> `executeProtectiveAction` call. The URI field is a Pinata-pinned JSON
+> payload with the signal snapshot, regime, and decision; the on-chain
+> `feedbackHash` commits to those bytes. The dashboard's decision log
+> pulls the same events live via `useWatchContractEvent` on
+> ReputationRegistry, filtered by our agentId.
 
 ## 4:30–5:00 — Close (30s)
 
