@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useWatchContractEvent, usePublicClient } from "wagmi";
 import { useQuery } from "@tanstack/react-query";
-import { CONTRACTS, reputationRegistryAbi } from "../contracts";
+import { CONTRACTS } from "../contracts";
 import { fetchAttestationJson } from "../ipfs";
 import type { Log } from "viem";
 
@@ -29,17 +29,35 @@ export interface DecisionLogLive {
 
 const MAX_BUFFERED = 50;
 // ~9 days at ~2s/block on Mantle. Wide enough to reach the agent's full
-// attestation history (V1 + V2 era — same agentId 106, same registry) so the
-// chart + decision_log paint immediately on first load rather than waiting for
-// the next hourly tick. rpc.mantle.xyz serves this range in a single getLogs
-// call (verified ~270 events for agent 106 over ~350k blocks), so no pagination
-// needed. The agentId filter keeps other agents' feedback out.
+// attestation history so the chart + decision_log paint immediately on first
+// load rather than waiting for the next hourly tick. rpc.mantle.xyz serves
+// this range in a single getLogs call, so no pagination needed.
 const HISTORICAL_LOOKBACK_BLOCKS = BigInt(400_000);
 
-// Single-event ABI fragment for getLogs — equivalent to the entry in
-// `reputationRegistryAbi` but typed as a literal so viem's argument-type
-// inference is happy.
-const NEW_FEEDBACK_EVENT = reputationRegistryAbi[0];
+// The agent's decisions are recorded on the SolventAttestation contract via
+// `DecisionRecorded` — NOT as `NewFeedback` on the shared ERC-8004
+// ReputationRegistry. The contract DOES best-effort mirror each decision to
+// the registry's `giveFeedback`, but that call currently reverts (caught +
+// emitted as `MirrorFailed`), so the registry holds zero agent-106 feedback.
+// `DecisionRecorded` fires reliably and carries the agentId (indexed) + the
+// IPFS `uri` we need for the chart payload, so it's the canonical source.
+const DECISION_RECORDED_EVENT = {
+  type: "event",
+  name: "DecisionRecorded",
+  inputs: [
+    { name: "agentId", type: "uint256", indexed: true },
+    { name: "vault", type: "address", indexed: true },
+    { name: "index", type: "uint256", indexed: true },
+    { name: "regime", type: "uint8", indexed: false },
+    { name: "reasonCode", type: "bytes32", indexed: false },
+    { name: "signalsHash", type: "bytes32", indexed: false },
+    { name: "action", type: "uint8", indexed: false },
+    { name: "outcome", type: "int256", indexed: false },
+    { name: "uri", type: "string", indexed: false },
+  ],
+} as const;
+
+const ATTESTATION_ABI = [DECISION_RECORDED_EVENT] as const;
 
 export function useDecisionLog(): DecisionLogLive {
   const [events, setEvents] = useState<Array<{ blockNumber: bigint; txHash: string; uri: string }>>([]);
@@ -50,8 +68,8 @@ export function useDecisionLog(): DecisionLogLive {
   // chart + log until the agent's next attestation lands.
   const historical = useQuery({
     queryKey: [
-      "historical-attestations",
-      CONTRACTS.reputationRegistry,
+      "historical-decisions",
+      CONTRACTS.attestation,
       String(CONTRACTS.agentId),
     ],
     queryFn: async (): Promise<Array<{ blockNumber: bigint; txHash: string; uri: string }>> => {
@@ -59,8 +77,8 @@ export function useDecisionLog(): DecisionLogLive {
       const latest = await publicClient.getBlockNumber();
       const fromBlock = latest > HISTORICAL_LOOKBACK_BLOCKS ? latest - HISTORICAL_LOOKBACK_BLOCKS : BigInt(0);
       const logs = await publicClient.getLogs({
-        address: CONTRACTS.reputationRegistry,
-        event: NEW_FEEDBACK_EVENT,
+        address: CONTRACTS.attestation,
+        event: DECISION_RECORDED_EVENT,
         args: { agentId: CONTRACTS.agentId },
         fromBlock,
         toBlock: "latest",
@@ -68,7 +86,7 @@ export function useDecisionLog(): DecisionLogLive {
       return logs.map((l) => ({
         blockNumber: l.blockNumber as bigint,
         txHash: l.transactionHash as string,
-        uri: ((l as unknown as { args?: { feedbackURI?: string } }).args?.feedbackURI as string) ?? "",
+        uri: ((l as unknown as { args?: { uri?: string } }).args?.uri as string) ?? "",
       }));
     },
     staleTime: 60_000,
@@ -76,15 +94,15 @@ export function useDecisionLog(): DecisionLogLive {
   });
 
   useWatchContractEvent({
-    address: CONTRACTS.reputationRegistry,
-    abi: reputationRegistryAbi,
-    eventName: "NewFeedback",
+    address: CONTRACTS.attestation,
+    abi: ATTESTATION_ABI,
+    eventName: "DecisionRecorded",
     args: { agentId: CONTRACTS.agentId },
     onLogs(logs: Log[]) {
-      const decoded = logs.map((l: Log & { args?: { feedbackURI?: string } }) => ({
+      const decoded = logs.map((l: Log & { args?: { uri?: string } }) => ({
         blockNumber: l.blockNumber as bigint,
         txHash: l.transactionHash as string,
-        uri: (l.args?.feedbackURI as string) ?? "",
+        uri: (l.args?.uri as string) ?? "",
       }));
       setEvents((prev) => {
         const merged = [...prev, ...decoded];
