@@ -1,6 +1,14 @@
 # Solvent — Live Depeg Demo — Spec
 
 **Date:** 2026-06-07
+**Note (2026-06-07):** A fork spike (see the plan) refined this: demo asset
+pivoted **USDT0 → USDY** (USDT0 has no INIT market; the empty USDT0/USDC pool
+also forced seeding). USDY has both a thin-but-real Agni pool (so **V3 seeding /
+NFPM is NOT needed** — a swap crashes the existing pool) and an INIT lending
+pool. The current `InitLendingAdapter` is a stub the vault can't call (expects
+pool tokens, vault passes underlying) → the plan builds `InitLendingAdapterV2`.
+Implementation truth lives in `docs/superpowers/plans/2026-06-07-live-depeg-demo.md`.
+
 **Goal:** A recordable, split-screen demo where the Solvent agent reacts to a
 real depeg on a **forked Mantle mainnet** and demonstrates *judgment*: it
 **bridges** (hedges via lending) on a transient depeg and **swaps** (full exit)
