@@ -21,6 +21,7 @@ library MantleAddresses {
     address internal constant AGNI_QUOTER_V2 = 0xc4aaDc921E1cdb66c5300Bc158a313292923C0cb;
     address internal constant AGNI_FACTORY = 0x25780dc8Fc3cfBD75F33bFDAB65e969b603b2035;
     address internal constant AGNI_USDY_USDT_POOL = 0xe38E3a804eF845e36F277D86Fb2b24b8C32B3340;
+    address internal constant AGNI_USDY_USDC_POOL_F100 = 0x9cd55b03c64B65Ba02A1D985Caef63046B2d54eb;
 
     // ---- Lending (INIT Capital) ----
     address internal constant INIT_CORE = 0x972BcB0284cca0152527c4f70f8F689852bCAFc5;
