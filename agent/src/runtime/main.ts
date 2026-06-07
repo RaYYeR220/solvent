@@ -26,7 +26,7 @@ export function parseArgs(argv: readonly string[]): CliArgs {
   throw new Error(`unknown flag: ${argv.join(" ")}`);
 }
 
-const QUOTER: Address = "0xc4aaDc921E1cdb66c5300Bc158a313292923C0cb";
+const QUOTER: Address = (process.env.QUOTER_ADDRESS ?? "0xc4aaDc921E1cdb66c5300Bc158a313292923C0cb") as Address;
 const ONDO_ORACLE: Address = "0xA96abbe61AfEdEB0D14a20440Ae7100D9aB4882f";
 const LIQUIDITY_PROBE_DEFAULT: readonly bigint[] = [];
 
@@ -49,7 +49,7 @@ async function main(): Promise<void> {
   // (Note: AgniDexAdapter contract was deployed in Plan 5 with feeTier=500;
   // this read-side mismatch is benign because AgniLiquiditySource is stubbed
   // to 0 on live mainnet, so the on-chain swap path never fires.)
-  const FEE_TIER = 100;
+  const FEE_TIER = process.env.FEE_TIER ? parseInt(process.env.FEE_TIER, 10) : 100;
 
   const price = new AgniPriceSource(
     readClient, QUOTER, cfg.asset, cfg.safeAsset,
