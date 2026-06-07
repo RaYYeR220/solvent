@@ -2,11 +2,15 @@ import Link from "next/link";
 import LandingFrame from "@/components/LandingFrame";
 import Header from "@/components/Header";
 import Scoreboard from "@/components/Scoreboard";
+import DepegStoryboard from "@/components/DepegStoryboard";
 import HowItWorks from "@/components/HowItWorks";
+import TrustModel from "@/components/TrustModel";
 import LiveProof, { LiveBadge } from "@/components/LiveProof";
 import Footer from "@/components/Footer";
 import { headlineScores } from "@/lib/benchmark";
 import { loadBenchmark } from "@/lib/benchmark.server";
+
+const RIBBON_STATS = ["24/7 monitoring", "~2s to react", "policy-bounded", "100% on-chain", "non-custodial"];
 
 export default async function LandingPage() {
   const report = await loadBenchmark();
@@ -17,7 +21,7 @@ export default async function LandingPage() {
       <Header ctaHref="/app" ctaLabel="open app →" />
 
       {/* HERO */}
-      <section style={{ marginBottom: 64 }}>
+      <section style={{ marginBottom: 30 }}>
         <div
           className="mono"
           style={{ fontSize: 11, letterSpacing: "0.14em", color: "var(--ink-cyan)", opacity: 0.7, marginBottom: 18, textTransform: "uppercase" }}
@@ -47,19 +51,9 @@ export default async function LandingPage() {
           An autonomous agent guarding on-chain deposits from depeg &mdash; watching
           price-vs-NAV around the clock and exiting to a safe asset before humans can react.
         </p>
-        <p className="mono" style={{ fontSize: 11.5, color: "var(--text-muted)", opacity: 0.75, maxWidth: 620, marginBottom: 30 }}>
+        <p className="mono" style={{ fontSize: 11.5, color: "var(--text-muted)", opacity: 0.75, maxWidth: 620, marginBottom: 28 }}>
           Running live on USDT0/USDC &middot; Ondo USDY (RWA) integration pending allowlist.
         </p>
-
-        <p className="mono" style={{ fontSize: 12, color: "var(--text-muted)", letterSpacing: "0.06em", marginBottom: 14 }}>
-          On a UST-shape collapse:
-        </p>
-        <div style={{ maxWidth: 600, marginBottom: 10 }}>
-          <Scoreboard ai={scores.ai} human={scores.human} hodl={scores.hodl} />
-        </div>
-        <div className="mono" style={{ fontSize: 10.5, color: "var(--text-muted)", opacity: 0.6, marginBottom: 30 }}>
-          {`// ai-vs-human benchmark · terminal-collapse scenario`}
-        </div>
 
         <Link
           href="/app"
@@ -80,22 +74,72 @@ export default async function LandingPage() {
         </Link>
       </section>
 
-      {/* SECTION DIVIDER */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 28 }}>
-        <div style={{ flex: 1, height: 1, background: "linear-gradient(to right, transparent, rgba(124,213,255,.27))" }} />
-        <span className="mono" style={{ fontSize: 9.5, letterSpacing: "0.18em", color: "var(--ink-cyan)", opacity: 0.65, textTransform: "uppercase" }}>
-          section B  ·  live proof
-        </span>
-        <div style={{ flex: 1, height: 1, background: "linear-gradient(to left, transparent, rgba(124,213,255,.27))" }} />
+      {/* STATS RIBBON */}
+      <div
+        className="mono"
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          gap: 14,
+          padding: "12px 16px",
+          marginBottom: 52,
+          border: "1px solid var(--border-cyan-faint)",
+          borderRadius: 2,
+          fontSize: 11,
+          letterSpacing: "0.08em",
+          color: "var(--text-muted)",
+          textTransform: "uppercase",
+        }}
+      >
+        {RIBBON_STATS.map((s, i) => (
+          <span key={s} style={{ display: "inline-flex", alignItems: "center", gap: 14 }}>
+            {i > 0 && <span style={{ opacity: 0.35 }}>·</span>}
+            <span>{s}</span>
+          </span>
+        ))}
       </div>
+
+      {/* ANATOMY OF A DEPEG (storyboard) */}
+      <DepegStoryboard />
+
+      {/* WHEN THE DUST SETTLES (scoreboard payoff) */}
+      <section style={{ marginBottom: 56 }}>
+        <div
+          className="mono"
+          style={{ fontSize: 10.5, letterSpacing: "0.14em", color: "var(--text-muted)", marginBottom: 14, textTransform: "uppercase" }}
+        >
+          {`// when_the_dust_settles`}
+        </div>
+        <h2
+          style={{ fontSize: 30, fontWeight: 300, letterSpacing: "-0.01em", color: "var(--text-strong)", lineHeight: 1.15, margin: "0 0 24px", maxWidth: 680 }}
+        >
+          On a UST-shape collapse, who&rsquo;s left standing?
+        </h2>
+        <div style={{ maxWidth: 600, marginBottom: 10 }}>
+          <Scoreboard ai={scores.ai} human={scores.human} hodl={scores.hodl} />
+        </div>
+        <div className="mono" style={{ fontSize: 10.5, color: "var(--text-muted)", opacity: 0.6 }}>
+          {`// ai-vs-human benchmark · terminal-collapse scenario`}
+        </div>
+      </section>
 
       {/* LIVE ON-CHAIN PROOF */}
       <section style={{ marginBottom: 56 }}>
+        <div
+          className="mono"
+          style={{ fontSize: 10.5, letterSpacing: "0.14em", color: "var(--text-muted)", marginBottom: 14, textTransform: "uppercase" }}
+        >
+          {`// not a demo — live right now`}
+        </div>
         <LiveProof />
       </section>
 
       {/* HOW IT WORKS */}
       <HowItWorks />
+
+      {/* TRUST MODEL */}
+      <TrustModel />
 
       {/* CTA */}
       <section style={{ textAlign: "center", padding: "40px 0 20px" }}>
