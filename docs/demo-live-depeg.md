@@ -141,6 +141,45 @@ cast send $VAULT 'setAgent(address)' $ACCT --private-key $KEY --rpc-url $RPC
 cast call $VAULT 'agent()(address)' --rpc-url $RPC                  # => 0xf39F…2266
 ```
 
+## 4b. Dashboard (fork) — repoint the env + VAULT MODE indicator
+
+The dashboard reads the same vault you just deployed. Point it at the **fork RPC**
+and the **fork vault address** via `web/.env.local`, then run the dev server. This
+is the same UI as production — only the env differs (the chain is Mantle id 5000,
+which matches the fork's `--chain-id 5000`).
+
+```bash
+cd web
+cat > .env.local <<EOF
+NEXT_PUBLIC_MANTLE_RPC=http://localhost:8545
+NEXT_PUBLIC_VAULT_ADDRESS=0xbe18A1B61ceaF59aEB6A9bC81AB4FB87D56Ba167
+NEXT_PUBLIC_ASSET_ADDRESS=0x5bE26527e817998A7206475496fDE1E68957c5A6
+NEXT_PUBLIC_SAFE_ASSET_ADDRESS=0x09Bc4E0D864854c6aFB6eB9A9cdF58aC190D0dF9
+EOF
+npm run dev    # http://localhost:3000/app
+```
+
+> Use the **VAULT address printed by SetupDemoFork** (step 2). `NEXT_PUBLIC_*`
+> vars are baked at dev-server start, so set `.env.local` **before** `npm run
+> dev` (restart the server if you change it). `ASSET`/`SAFE_ASSET` are USDY/USDC.
+
+**VAULT MODE indicator.** Just under the protected-position strip, the dashboard
+shows a `VAULT MODE` row driven by the live `useVaultMode` hook (reads
+`policy.bridgeVenue` → the INIT adapter's `collateralUnderlying()` /
+`debtUnderlying()`):
+
+- **`VAULT MODE: DIRECT`** (cyan) — the vault holds its risk/safe asset directly;
+  no open hedge. This is the state at deposit, after a **SWAP** (§5), and after an
+  **UNWIND** (§6c). The line reads `holding risk asset directly`.
+- **`VAULT MODE: BRIDGED`** (warm-gold) — the agent has hedged via INIT. The
+  breakdown line shows `collateral <USDY> · borrowed <USDC>` (collateral 18-dec,
+  debt 6-dec), e.g. `collateral 4,999.99 USDY · borrowed 2,500.00 USDC` after the
+  bridge in §6b. It flips back to DIRECT on the unwind.
+
+The panel polls every 12 s (wagmi `refetchInterval`), so after an agent action the
+mode flips within a poll cycle — no reload needed. Drive the scenarios in §5/§6 and
+watch the indicator (and TVL / decision log) react live.
+
 ## 5. Swap scenario — CALM → depeg → SWAP_TO_SAFE (verified end-to-end)
 
 This is the full Phase-1 deliverable, verified on the fork at block ~96.39M.
@@ -458,3 +497,33 @@ No mainnet transaction anywhere.
 > safe-asset reserve (or borrow slightly under the LTV cap) so the unwind always
 > covers accrued interest; the agent already repays the vault's **whole** safe
 > balance for exactly this reason.
+
+---
+
+## 7. Recording the demo
+
+**Screen-recording is the user's** — this runbook produces the live, reacting
+system; capturing it (OBS / QuickTime / Loom) is up to you. A clean take:
+
+1. Start the fork (§1), unpause INIT + fund USDY (§3 / §6a).
+2. Deploy with the scenario's `DEMO_DEPOSIT` (§2): **100 USDY** for the swap take,
+   **5000 USDY** for the bridge take. `setAgent` to acct0 (§4).
+3. Point the dashboard at the fork and open `http://localhost:3000/app` (§4b).
+   It shows **VAULT MODE: DIRECT** at rest.
+4. Start the agent in `--forever` so it polls live (it attests CALM ticks):
+   ```bash
+   cd agent
+   DOTENV_CONFIG_PATH=.env.fork \
+   WATCH_DIVERGENCE_BPS=730 EARLY_DIVERGENCE_BPS=735 TERMINAL_DIVERGENCE_BPS=750 \
+     npx tsx src/runtime/main.ts --forever
+   ```
+   (Use `TERMINAL_DIVERGENCE_BPS=900` for the **bridge** take so the small depeg
+   lands in the EARLY band — see §6.)
+5. With the recording rolling, fire the depeg in another shell (§5b swap / §6b
+   bridge). On the next poll the agent acts on-chain and the dashboard reacts:
+   **TVL preserved**, a new **decision-log** entry, and the **VAULT MODE**
+   indicator flips **DIRECT → BRIDGED** (bridge take only). For the bridge take,
+   then run the re-peg (§6c) and watch it flip **BRIDGED → DIRECT** on unwind.
+
+Everything runs against the local anvil fork; **no mainnet transaction is sent at
+any point**, so the recording is safe to make repeatedly.
