@@ -1,4 +1,4 @@
-import type { LiquiditySource, NavSource, PositionSource, PriceSource } from "./adapters/types";
+import type { BridgeSource, LiquiditySource, NavSource, PositionSource, PriceSource } from "./adapters/types";
 import type { Signals } from "./types";
 
 export interface SignalSources {
@@ -7,15 +7,17 @@ export interface SignalSources {
   priceCrossCheck?: PriceSource;
   liquidity: LiquiditySource;
   position: PositionSource;
+  bridge?: BridgeSource; // optional: open bridge position (drives the unwind trigger)
 }
 
 /** Reads all sources (primary in parallel) and assembles a Signals snapshot. */
 export async function gatherSignals(src: SignalSources): Promise<Signals> {
-  const [navPrice, marketPrice, liquidityDepth, assetBalance] = await Promise.all([
+  const [navPrice, marketPrice, liquidityDepth, assetBalance, bridged] = await Promise.all([
     src.nav.getNavPrice(),
     src.price.getMarketPrice(),
     src.liquidity.getLiquidityDepth(),
     src.position.getAssetBalance(),
+    src.bridge ? src.bridge.getBridgedPosition() : Promise.resolve(null),
   ]);
 
   let oracleDivergenceBps = 0;
@@ -33,5 +35,6 @@ export async function gatherSignals(src: SignalSources): Promise<Signals> {
     assetBalance,
     oracleDivergenceBps,
     timestamp: Math.floor(Date.now() / 1000),
+    ...(bridged ? { bridged } : {}),
   };
 }
