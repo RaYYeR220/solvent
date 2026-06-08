@@ -3,6 +3,7 @@
 import DashboardFrame from "@/components/DashboardFrame";
 import DashboardHeader from "@/components/DashboardHeader";
 import ProtectedPositionStrip from "@/components/ProtectedPositionStrip";
+import VaultModeIndicator from "@/components/VaultModeIndicator";
 import VaultActions from "@/components/VaultActions";
 import ChartPanel from "@/components/ChartPanel";
 import PolicyPanel from "@/components/PolicyPanel";
@@ -89,6 +90,8 @@ export default function DashboardPage() {
       </div>
 
       <ProtectedPositionStrip />
+
+      <VaultModeIndicator />
 
       <div className="reflow-grid" style={{ display: "grid", gridTemplateColumns: "1.9fr 1fr", gap: 22, marginTop: 20, alignItems: "stretch" }}>
         <VaultActions />
