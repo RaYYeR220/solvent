@@ -96,15 +96,16 @@
     }
   },
   "verification": {
-    "status": "pending — Mantlescan API moved to Etherscan API V2 (single multi-chain key)",
-    "etherscanV2Url": "https://api.etherscan.io/v2/api",
-    "etherscanV2GetKeyAt": "https://etherscan.io/myaccount"
+    "verifiedOnMantlescan": ["solventVaultV1", "solventAttestation", "agniDexAdapter", "initLendingAdapter"],
+    "pending": {
+      "solventVault": "SolventVaultV2 — verification with Etherscan API V2 key in progress"
+    },
+    "etherscanV2Url": "https://api.etherscan.io/v2/api"
   },
   "ondoAllowlist": {
     "status": "pending — request filed 2026-05-29 with V1 address; needs update to V2 address",
     "requestedVaultAddressV1": "0x06513470e16a7d6071A12708c38a6fa0ED66469c",
     "currentVaultAddressV2": "0xDDEd84Ef1ceA80af70b23B599cC9672a15c57c9f",
-    "todo": "send follow-up email to Ondo with V2 vault address",
     "ifApproved": "redeploy with RISK_ASSET=0x5bE26527e817998A7206475496fDE1E68957c5A6 (USDY)"
   }
 }
