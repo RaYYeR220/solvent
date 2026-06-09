@@ -11,6 +11,10 @@ out/
 /broadcast/*/31337/
 /broadcast/**/dry-run/
 
+# Fork-only demo scripts — local anvil-fork run logs, not mainnet deployment records
+/broadcast/SetupDemoFork.s.sol/
+/broadcast/ManualDepegFork.s.sol/
+
 # Docs
 docs/
 
