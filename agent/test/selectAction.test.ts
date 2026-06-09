@@ -87,4 +87,50 @@ describe("selectAction", () => {
     expect(d.plan.action).toBe(ActionType.NONE);
     expect(d.reasonCode).toBe("protect-failed-dust");
   });
+
+  // --- bridge lifecycle: unwind on re-peg ---
+  // safeBalance slightly exceeds the (stale) debt view to mirror the vault holding
+  // the borrowed safe asset plus a tiny buffer for accrued-interest dust.
+  const bridged = { collateral: 5000n * ONE, debt: 2500n * 10n ** 6n, safeBalance: 2505n * 10n ** 6n };
+
+  it("open bridge + CALM (re-peg) -> UNWIND_BRIDGE repaying the whole safe balance, withdrawing all collateral", () => {
+    const d = selectAction(Regime.CALM, signals({ bridged, assetBalance: 0n }), policy(ALL));
+    expect(d.plan.action).toBe(ActionType.UNWIND_BRIDGE);
+    expect(d.reasonCode).toBe("unwind-repeg");
+    if (d.plan.action === ActionType.UNWIND_BRIDGE) {
+      // repay the vault's full safe balance (over-covers debt+dust => clean close)
+      expect(d.plan.repayAmount).toBe(2505n * 10n ** 6n);
+      expect(d.plan.withdrawAmount).toBe(5000n * ONE);
+    }
+  });
+
+  it("open bridge + WATCH (re-peg) -> UNWIND_BRIDGE", () => {
+    const d = selectAction(Regime.WATCH, signals({ bridged, assetBalance: 0n }), policy(ALL));
+    expect(d.plan.action).toBe(ActionType.UNWIND_BRIDGE);
+    expect(d.reasonCode).toBe("unwind-repeg");
+  });
+
+  it("open bridge but depeg persists (EARLY) -> hold the hedge, no action", () => {
+    const d = selectAction(Regime.EARLY_DEPEG, signals({ bridged, assetBalance: 0n, liquidityDepth: 1n }), policy(ALL));
+    expect(d.plan.action).toBe(ActionType.NONE);
+    expect(d.reasonCode).toBe("bridge-holding");
+  });
+
+  it("open bridge but depeg persists (TERMINAL) -> hold the hedge, no action", () => {
+    const d = selectAction(Regime.TERMINAL_DEPEG, signals({ bridged, assetBalance: 0n, liquidityDepth: 1n }), policy(ALL));
+    expect(d.plan.action).toBe(ActionType.NONE);
+    expect(d.reasonCode).toBe("bridge-holding");
+  });
+
+  it("open bridge + re-peg but UNWIND not allowed -> hold the hedge (no unwind)", () => {
+    const allowedNoUnwind = (1 << ActionType.SWAP_TO_SAFE) | (1 << ActionType.BRIDGE_VIA_LENDING);
+    const d = selectAction(Regime.CALM, signals({ bridged, assetBalance: 0n }), policy(allowedNoUnwind));
+    expect(d.plan.action).toBe(ActionType.NONE);
+    expect(d.reasonCode).toBe("bridge-holding");
+  });
+
+  it("no bridge position -> normal CALM path (park-yield) unaffected", () => {
+    const d = selectAction(Regime.CALM, signals(), policy(ALL));
+    expect(d.plan.action).toBe(ActionType.PARK_YIELD);
+  });
 });

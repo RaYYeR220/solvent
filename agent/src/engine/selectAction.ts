@@ -14,6 +14,10 @@ export function maxBorrow(collateral: bigint, p: AgentPolicy): bigint {
 
 /**
  * Chooses a policy-bounded action for the regime.
+ * - Open bridge position + back to CALM/WATCH (re-peg): UNWIND_BRIDGE (repay debt,
+ *   withdraw collateral, return to the risk asset). Takes priority over the
+ *   regime-default action so a hedged vault closes its hedge once the depeg passes.
+ *   While the depeg persists (EARLY/TERMINAL) we hold the bridge.
  * - CALM: park idle capital in safe yield.
  * - WATCH: observe only.
  * - EARLY/TERMINAL: exit into available liquidity if possible (the timing edge);
@@ -21,6 +25,33 @@ export function maxBorrow(collateral: bigint, p: AgentPolicy): bigint {
  *   if neither is possible, do nothing and report protect-failed (never dump into an empty pool).
  */
 export function selectAction(regime: Regime, s: Signals, p: AgentPolicy): Decision {
+  // Bridge lifecycle: once a hedge is open, the re-peg (return to CALM/WATCH) is
+  // the unwind trigger. This is checked before the regime switch so it overrides
+  // the CALM park-yield / WATCH observe defaults. The on-chain unwind repays the
+  // debt and withdraws all collateral, both read live off the bridge venue.
+  if (
+    s.bridged !== undefined &&
+    s.bridged.collateral > 0n &&
+    isActionAllowed(p, ActionType.UNWIND_BRIDGE) &&
+    (regime === Regime.CALM || regime === Regime.WATCH)
+  ) {
+    // Repay the vault's WHOLE safe-asset balance, not the (stale) view debt: the
+    // live debt accrues a hair above the view between read and execution, so
+    // repaying the exact view amount would leave dust debt and INIT would reject
+    // the full-collateral withdraw on a health check. Over-repaying closes the
+    // position cleanly; the venue refunds any unspent safe asset to the vault.
+    // (`withdrawAmount` is the full collateral; the adapter caps it at holdings.)
+    return {
+      regime,
+      plan: { action: ActionType.UNWIND_BRIDGE, repayAmount: s.bridged.safeBalance, withdrawAmount: s.bridged.collateral },
+      reasonCode: "unwind-repeg",
+    };
+  }
+  // Hold an open hedge while the depeg persists (don't double-bridge or swap).
+  if (s.bridged !== undefined && s.bridged.collateral > 0n) {
+    return { regime, plan: { action: ActionType.NONE }, reasonCode: "bridge-holding" };
+  }
+
   switch (regime) {
     case Regime.CALM:
       if (s.assetBalance > 0n && isActionAllowed(p, ActionType.PARK_YIELD)) {

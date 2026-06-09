@@ -10,6 +10,7 @@ import { ConstantNavSource } from "../adapters/ConstantNavSource";
 import { AgniPriceSource } from "../adapters/AgniPriceSource";
 import { AgniLiquiditySource } from "../adapters/AgniLiquiditySource";
 import { VaultPositionSource } from "../adapters/VaultPositionSource";
+import { BridgePositionSource } from "../adapters/BridgePositionSource";
 import { createPinataPinner, createDataUriPinner } from "../attestation/ipfsPinner";
 import { createViemSender } from "../executor/viemSender";
 import { runTick } from "./runTick";
@@ -26,7 +27,7 @@ export function parseArgs(argv: readonly string[]): CliArgs {
   throw new Error(`unknown flag: ${argv.join(" ")}`);
 }
 
-const QUOTER: Address = "0xc4aaDc921E1cdb66c5300Bc158a313292923C0cb";
+const QUOTER: Address = (process.env.QUOTER_ADDRESS ?? "0xc4aaDc921E1cdb66c5300Bc158a313292923C0cb") as Address;
 const ONDO_ORACLE: Address = "0xA96abbe61AfEdEB0D14a20440Ae7100D9aB4882f";
 const LIQUIDITY_PROBE_DEFAULT: readonly bigint[] = [];
 
@@ -49,7 +50,7 @@ async function main(): Promise<void> {
   // (Note: AgniDexAdapter contract was deployed in Plan 5 with feeTier=500;
   // this read-side mismatch is benign because AgniLiquiditySource is stubbed
   // to 0 on live mainnet, so the on-chain swap path never fires.)
-  const FEE_TIER = 100;
+  const FEE_TIER = process.env.FEE_TIER ? parseInt(process.env.FEE_TIER, 10) : 100;
 
   const price = new AgniPriceSource(
     readClient, QUOTER, cfg.asset, cfg.safeAsset,
@@ -72,6 +73,10 @@ async function main(): Promise<void> {
   );
 
   const position = new VaultPositionSource(readClient, cfg.asset, cfg.vaultAddress);
+  // Bridge position (INIT lending), resolved from the vault's on-chain
+  // policy.bridgeVenue. Null when unbridged, so the unwind trigger is inert until
+  // a hedge is actually open. Drives UNWIND_BRIDGE on the re-peg.
+  const bridge = new BridgePositionSource(readClient, cfg.vaultAddress);
 
   const pinner = cfg.pinataJwt
     ? createPinataPinner(cfg.pinataJwt)
@@ -81,7 +86,7 @@ async function main(): Promise<void> {
 
   const tickOnce = async (tickNumber: number): Promise<void> => {
     const res = await runTick({
-      sources: { nav, price, liquidity, position },
+      sources: { nav, price, liquidity, position, bridge },
       policy: cfg.policy,
       sender, pinner, tick: tickNumber,
       agentId: cfg.agentId,

@@ -17,6 +17,20 @@ export enum Regime {
   TERMINAL_DEPEG = 3,
 }
 
+/** An open bridge (lending) position the vault holds, read off the bridge venue's
+ *  position views. `collateral` is in the risk asset's units (e.g. USDY 18dec),
+ *  `debt` in the safe asset's units (e.g. USDC 6dec) — i.e. the amounts
+ *  `UNWIND_BRIDGE` must repay/withdraw to close it. `safeBalance` is the vault's
+ *  own safe-asset holding (also safe-asset units): on unwind we repay the WHOLE
+ *  safe balance when it covers the debt, so the borrow-interest dust accrued
+ *  since the (stale) view read is always covered and the position closes fully
+ *  (the venue refunds any unspent safe asset). */
+export interface BridgedPosition {
+  collateral: bigint; // collateral underlying, asset-native units
+  debt: bigint; // debt underlying (stale view read), safe-asset-native units
+  safeBalance: bigint; // vault's safe-asset balance, safe-asset-native units
+}
+
 /** A snapshot of the world at one tick. Prices normalized to 1e18; amounts in token-native units. */
 export interface Signals {
   navPrice: bigint; // backing value (Ondo NAV / exchange rate), 1e18
@@ -25,6 +39,7 @@ export interface Signals {
   assetBalance: bigint; // vault's current asset holding, asset-native units
   oracleDivergenceBps: number; // spread between independent price sources, bps
   timestamp: number; // unix seconds
+  bridged?: BridgedPosition; // open bridge position (collateral+debt), if any
 }
 
 /** Agent-side risk config. Superset of the on-chain Policy (adds off-chain-only tuning). */
