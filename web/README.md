@@ -4,8 +4,8 @@ Next.js dashboard for [Solvent](../README.md), the autonomous depeg guardian on 
 
 - Landing: `/`
 - App (dashboard + onboarding): `/app`
-- Visual identity: Schematic Blueprint — see `../docs/superpowers/specs/2026-05-28-solvent-dashboard-design.md`
-- Canonical mockup: `../docs/superpowers/specs/2026-05-28-solvent-dashboard-mockup.html`
+- Dashboard spec (canonical): `../docs/superpowers/specs/2026-05-30-solvent-v2-redesign-design.md`
+- Landing spec (canonical): `../docs/superpowers/specs/2026-06-06-landing-v2-redesign-design.md`
 
 ## Develop
 
