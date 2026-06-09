@@ -6,7 +6,7 @@ on:
     # so 6 MNT lasts ~15 days. To pause entirely during dev: Actions tab →
     # agent-tick → "Disable workflow" (workflow_dispatch still works for ad-hoc
     # manual ticks). For demo day, can be bumped to `*/15 * * * *` short-term.
-    - cron: "0 * * * *"
+    - cron: "23 * * * *"
   workflow_dispatch: {}
 
 concurrency:
