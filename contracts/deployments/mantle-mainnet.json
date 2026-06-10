@@ -96,10 +96,7 @@
     }
   },
   "verification": {
-    "verifiedOnMantlescan": ["solventVaultV1", "solventAttestation", "agniDexAdapter", "initLendingAdapter"],
-    "pending": {
-      "solventVault": "SolventVaultV2 — verification with Etherscan API V2 key in progress"
-    },
+    "verifiedOnMantlescan": ["solventVault", "solventVaultV1", "solventAttestation", "agniDexAdapter", "initLendingAdapter"],
     "etherscanV2Url": "https://api.etherscan.io/v2/api"
   },
   "ondoAllowlist": {
