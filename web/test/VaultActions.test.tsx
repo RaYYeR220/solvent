@@ -18,17 +18,24 @@ vi.mock("wagmi", () => ({
   useWriteContract: () => ({ writeContractAsync: vi.fn(), isPending: false }),
 }));
 
+const { useVaultStateMock } = vi.hoisted(() => ({ useVaultStateMock: vi.fn() }));
+const DEFAULT_VAULT_STATE = {
+  userShares: BigInt(100_000_000),
+  riskAssetBalance: BigInt(1_000_000_000),
+  safeAssetBalance: BigInt(0),
+  totalAssets: BigInt(1_000_000_000),
+  assetDecimals: 6,
+  shareDecimals: 6,
+  safeDecimals: 6,
+  assetSymbol: "USDT0",
+  shareSymbol: "svUSDT0",
+  safeSymbol: "USDC",
+  decimalsLoading: false,
+  symbolsLoading: false,
+};
+useVaultStateMock.mockReturnValue(DEFAULT_VAULT_STATE);
 vi.mock("../src/lib/hooks/useVaultState", () => ({
-  useVaultState: () => ({
-    userShares: BigInt(100_000_000),
-    riskAssetBalance: BigInt(1_000_000_000),
-    safeAssetBalance: BigInt(0),
-    totalAssets: BigInt(1_000_000_000),
-    assetDecimals: 6,
-    shareDecimals: 6,
-    safeDecimals: 6,
-    decimalsLoading: false,
-  }),
+  useVaultState: () => useVaultStateMock(),
 }));
 
 vi.mock("../src/lib/hooks/useDeposit", () => ({
@@ -75,11 +82,33 @@ describe("VaultActions", () => {
     expect(text.toLowerCase()).toContain("// withdraw");
     expect(text).toContain("YOU PAY");
     expect(text).toContain("YOU BURN");
+    // Symbols come from chain — USDT0 asset + svUSDT0 shares on the mainnet vault.
+    expect(text).toContain("USDT0");
+    expect(text).toContain("svUSDT0");
     // No tab buttons — there should be no plain-text "DEPOSIT" / "WITHDRAW"
     // toggle-style buttons. The buttons that DO exist are MAX or state-driven
     // primary buttons (ENTER AMOUNT / APPROVE X / etc.).
     expect(queryByRole("button", { name: /^deposit$/i })).toBeNull();
     expect(queryByRole("button", { name: /^withdraw$/i })).toBeNull();
+  });
+
+  it("uses chain symbols for a fork vault (USDY asset) instead of hardcoded USDT0", () => {
+    useAccountMock.mockReturnValue({ address: "0xUSER", isConnected: true });
+    useReadContractMock.mockReturnValue({ data: BigInt(0), refetch: vi.fn() });
+    useVaultStateMock.mockReturnValue({
+      ...DEFAULT_VAULT_STATE,
+      assetDecimals: 18,
+      shareDecimals: 18,
+      assetSymbol: "USDY",
+      shareSymbol: "svUSDT0", // honest on-chain value: V2.1 reused V2's share symbol
+    });
+    const { container } = render(<VaultActions />);
+    const text = container.textContent ?? "";
+    // Asset symbol comes from chain — the fork vault shows USDY, proving the
+    // label is no longer the hardcoded "USDT0". (The share symbol is still the
+    // honest on-chain "svUSDT0", which is intentional.)
+    expect(text).toContain("USDY");
+    useVaultStateMock.mockReturnValue(DEFAULT_VAULT_STATE);
   });
 
   it("MAX button on deposit side sets amount to the wallet USDT0 balance", () => {

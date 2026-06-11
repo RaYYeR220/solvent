@@ -15,6 +15,9 @@ vi.mock("wagmi", () => {
         { status: "success", result: 6 },  // asset decimals (USDT0)
         { status: "success", result: 6 },  // share decimals
         { status: "success", result: 6 },  // safe-asset decimals (USDC)
+        { status: "success", result: "USDT0" },   // asset symbol
+        { status: "success", result: "svUSDT0" }, // share symbol
+        { status: "success", result: "USDC" },    // safe-asset symbol
       ],
       isLoading: false,
       isError: false,
@@ -48,6 +51,14 @@ describe("useVaultState", () => {
     expect(result.current.decimalsLoading).toBe(false);
   });
 
+  it("reads asset/share/safe symbols from chain (USDT0 / svUSDT0 / USDC)", () => {
+    const { result } = renderHook(() => useVaultState());
+    expect(result.current.assetSymbol).toBe("USDT0");
+    expect(result.current.shareSymbol).toBe("svUSDT0");
+    expect(result.current.safeSymbol).toBe("USDC");
+    expect(result.current.symbolsLoading).toBe(false);
+  });
+
   it("threads 18-decimal reads through (e.g. USDY asset)", () => {
     vi.mocked(wagmi.useReadContracts).mockReturnValueOnce({
       data: [
@@ -60,6 +71,9 @@ describe("useVaultState", () => {
         { status: "success", result: 18 }, // asset decimals (USDY)
         { status: "success", result: 18 }, // share decimals
         { status: "success", result: 6 },  // safe-asset decimals (USDC)
+        { status: "success", result: "USDY" },    // asset symbol (fork)
+        { status: "success", result: "svUSDT0" }, // share symbol (V2.1 reused V2's symbol on the fork)
+        { status: "success", result: "USDC" },    // safe-asset symbol
       ],
       isLoading: false,
       isError: false,
@@ -70,6 +84,11 @@ describe("useVaultState", () => {
     expect(result.current.safeDecimals).toBe(6);
     // 100e18 / 10**18 = 100 (not 100 trillion as the old hardcoded /1e6 produced).
     expect(Number(result.current.totalAssets) / 10 ** result.current.assetDecimals).toBe(100);
+    // Symbols flow through from chain — asset reads "USDY" on the fork, not the
+    // hardcoded "USDT0"; the share symbol is the honest on-chain "svUSDT0".
+    expect(result.current.assetSymbol).toBe("USDY");
+    expect(result.current.shareSymbol).toBe("svUSDT0");
+    expect(result.current.safeSymbol).toBe("USDC");
   });
 
   it("defaults decimals to 18 (not 6) and flags decimalsLoading while reads are in-flight", () => {
@@ -82,5 +101,9 @@ describe("useVaultState", () => {
     expect(result.current.assetDecimals).toBe(18);
     expect(result.current.shareDecimals).toBe(18);
     expect(result.current.decimalsLoading).toBe(true);
+    // Symbols are empty (not a wrong hardcoded "USDT0") while reads are in-flight.
+    expect(result.current.assetSymbol).toBe("");
+    expect(result.current.shareSymbol).toBe("");
+    expect(result.current.symbolsLoading).toBe(true);
   });
 });

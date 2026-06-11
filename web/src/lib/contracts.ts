@@ -88,6 +88,8 @@ export const erc20Abi = [
     outputs: [{ type: "uint256" }] },
   { type: "function", name: "decimals", stateMutability: "view",
     inputs: [], outputs: [{ type: "uint8" }] },
+  { type: "function", name: "symbol", stateMutability: "view",
+    inputs: [], outputs: [{ type: "string" }] },
 ] as const;
 
 export const rwaOracleAbi = [

@@ -7,6 +7,18 @@ vi.mock("../src/lib/hooks/useVaultMode", () => ({
   useVaultMode: () => useVaultMode(),
 }));
 
+// VaultModeIndicator also reads symbols + decimals from chain via useVaultState
+// (collateral = risk asset, debt = safe asset). Mock it so the fork values
+// (USDY collateral 18-dec, USDC debt 6-dec) flow through.
+vi.mock("../src/lib/hooks/useVaultState", () => ({
+  useVaultState: () => ({
+    assetDecimals: 18,
+    safeDecimals: 6,
+    assetSymbol: "USDY",
+    safeSymbol: "USDC",
+  }),
+}));
+
 import VaultModeIndicator from "../src/components/VaultModeIndicator";
 
 describe("VaultModeIndicator", () => {

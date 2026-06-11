@@ -24,10 +24,19 @@ export interface VaultStateLive {
   shareDecimals: number;
   /** Safe-asset token decimals, read from chain (e.g. 6 for USDC). */
   safeDecimals: number;
+  /** Risk-asset token symbol, read from chain (e.g. "USDT0" mainnet, "USDY" fork). */
+  assetSymbol: string;
+  /** Vault share (ERC4626) symbol, read from chain (e.g. "svUSDT0"). */
+  shareSymbol: string;
+  /** Safe-asset token symbol, read from chain (e.g. "USDC"). */
+  safeSymbol: string;
   /** True until the on-chain decimals reads have resolved. Render guards
    *  should suppress numeric displays while this is true to avoid a flash of
    *  wrong-magnitude numbers (decimals default to 18, not 6). */
   decimalsLoading: boolean;
+  /** True until the on-chain symbol reads have resolved. Consumers should
+   *  prefer an empty/placeholder label over a wrong hardcoded one while true. */
+  symbolsLoading: boolean;
   /** Truncated vault address suitable for display. */
   address: string;
   isLoading: boolean;
@@ -54,6 +63,12 @@ export function useVaultState(): VaultStateLive {
       { address: CONTRACTS.asset, abi: erc20Abi, functionName: "decimals" },
       { address: CONTRACTS.vault, abi: vaultAbi, functionName: "decimals" },
       { address: CONTRACTS.safeAsset, abi: erc20Abi, functionName: "decimals" },
+      // Symbols read from chain so labels are correct for ANY vault (USDT0 on
+      // mainnet, USDY on a fork, …) — never hardcoded.
+      // Index 9: risk-asset symbol, 10: share symbol, 11: safe-asset symbol.
+      { address: CONTRACTS.asset, abi: erc20Abi, functionName: "symbol" },
+      { address: CONTRACTS.vault, abi: vaultAbi, functionName: "symbol" },
+      { address: CONTRACTS.safeAsset, abi: erc20Abi, functionName: "symbol" },
     ],
     query: { refetchInterval: 12_000 },
   });
@@ -86,6 +101,9 @@ export function useVaultState(): VaultStateLive {
   const assetDecimalsRaw = r?.[6]?.result as number | undefined;
   const shareDecimalsRaw = r?.[7]?.result as number | undefined;
   const safeDecimalsRaw = r?.[8]?.result as number | undefined;
+  const assetSymbolRaw = r?.[9]?.result as string | undefined;
+  const shareSymbolRaw = r?.[10]?.result as string | undefined;
+  const safeSymbolRaw = r?.[11]?.result as string | undefined;
   return {
     asset: (r?.[0]?.result as Address | undefined) ?? CONTRACTS.asset,
     agent: (r?.[1]?.result as Address | undefined) ?? "0x0000000000000000000000000000000000000000",
@@ -101,7 +119,13 @@ export function useVaultState(): VaultStateLive {
     assetDecimals: assetDecimalsRaw ?? 18,
     shareDecimals: shareDecimalsRaw ?? 18,
     safeDecimals: safeDecimalsRaw ?? 18,
+    // Symbols default to "" while loading — consumers show a placeholder ("…")
+    // rather than a wrong hardcoded "USDT0" before the read resolves.
+    assetSymbol: assetSymbolRaw ?? "",
+    shareSymbol: shareSymbolRaw ?? "",
+    safeSymbol: safeSymbolRaw ?? "",
     decimalsLoading: assetDecimalsRaw === undefined || shareDecimalsRaw === undefined,
+    symbolsLoading: assetSymbolRaw === undefined || shareSymbolRaw === undefined,
     address: shortAddr(CONTRACTS.vault),
     isLoading: batch.isLoading || riskBal.isLoading || safeBal.isLoading,
     isError: batch.isError || riskBal.isError || safeBal.isError,

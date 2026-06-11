@@ -9,10 +9,6 @@ import { useVaultState } from "../lib/hooks/useVaultState";
 import { useDeposit } from "../lib/hooks/useDeposit";
 import { useWithdraw } from "../lib/hooks/useWithdraw";
 
-const ASSET_SYMBOL = "USDT0";
-const SHARE_SYMBOL = "svUSDT0";
-const SAFE_SYMBOL = "USDC";
-
 // ---------- formatting helpers ----------
 
 function parseAmount(raw: string, decimals: number): bigint {
@@ -119,6 +115,13 @@ export default function VaultActions() {
   const ASSET_DECIMALS = vault.assetDecimals;
   const SHARE_DECIMALS = vault.shareDecimals;
   const SAFE_DECIMALS = vault.safeDecimals;
+
+  // Token symbols also come from chain (USDT0/svUSDT0/USDC mainnet, USDY/… on a
+  // fork) so every label is correct for ANY vault — never hardcoded. Fall back
+  // to "…" while the read is in-flight rather than a wrong hardcoded "USDT0".
+  const ASSET_SYMBOL = vault.assetSymbol || "…";
+  const SHARE_SYMBOL = vault.shareSymbol || "…";
+  const SAFE_SYMBOL = vault.safeSymbol || "…";
 
   const [depositAmount, setDepositAmount] = useState<string>("");
   const [withdrawAmount, setWithdrawAmount] = useState<string>("");

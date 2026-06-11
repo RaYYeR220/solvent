@@ -63,7 +63,7 @@ export default function ProtectedPositionStrip() {
         {decimalsReady ? fmtUsd(tvlUsd) : "…"}
       </div>
       <div className="mono" style={{ fontSize: 12.5, color: "var(--text-muted)", marginBottom: 14 }}>
-        {decimalsReady ? fmtAssetUnits(userValueUsd) : "…"} USDT0  ·  entry {decimalsReady ? fmtUsd(entryUsd) : "…"}  ·  Δ{" "}
+        {decimalsReady ? fmtAssetUnits(userValueUsd) : "…"} {vault.assetSymbol || "…"}  ·  entry {decimalsReady ? fmtUsd(entryUsd) : "…"}  ·  Δ{" "}
         <span style={{ color: "var(--ink-cyan)" }}>{deltaPct >= 0 ? "+" : ""}{deltaPct.toFixed(1)}%</span>
       </div>
       <div

@@ -10,7 +10,11 @@ const SIX_DEC_STATE = {
   assetDecimals: 6,
   shareDecimals: 6,
   safeDecimals: 6,
+  assetSymbol: "USDT0",
+  shareSymbol: "svUSDT0",
+  safeSymbol: "USDC",
   decimalsLoading: false,
+  symbolsLoading: false,
   address: "0xCAFE…BEEF",
   killSwitch: false,
 };
@@ -46,6 +50,8 @@ describe("ProtectedPositionStrip", () => {
     expect(getByText(/\$1,234\.56/)).toBeTruthy();
     // user shares line includes "100" share count
     expect(container.textContent).toContain("100.00");
+    // asset symbol comes from chain — USDT0 on the mainnet vault.
+    expect(container.textContent).toContain("USDT0");
     // status row mentions REGIME / NAV / MKT
     expect(container.textContent).toMatch(/REGIME/);
     expect(container.textContent).toMatch(/NAV/);
@@ -63,10 +69,14 @@ describe("ProtectedPositionStrip", () => {
       assetDecimals: 18,
       shareDecimals: 18,
       safeDecimals: 6,
+      assetSymbol: "USDY",
     });
     const { container } = render(<ProtectedPositionStrip />);
     expect(container.textContent).toContain("$100.00");
     expect(container.textContent).not.toMatch(/trillion|,000,000,000/);
+    // Symbol comes from chain — the fork vault renders USDY, not a hardcoded USDT0.
+    expect(container.textContent).toContain("USDY");
+    expect(container.textContent).not.toContain("USDT0");
   });
 
   it("prod-equivalence: 6-dec and 18-dec inputs of the same value render identically", () => {
