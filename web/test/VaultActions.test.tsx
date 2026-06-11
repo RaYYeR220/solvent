@@ -24,6 +24,10 @@ vi.mock("../src/lib/hooks/useVaultState", () => ({
     riskAssetBalance: BigInt(1_000_000_000),
     safeAssetBalance: BigInt(0),
     totalAssets: BigInt(1_000_000_000),
+    assetDecimals: 6,
+    shareDecimals: 6,
+    safeDecimals: 6,
+    decimalsLoading: false,
   }),
 }));
 

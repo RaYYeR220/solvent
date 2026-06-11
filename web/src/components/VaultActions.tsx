@@ -9,9 +9,6 @@ import { useVaultState } from "../lib/hooks/useVaultState";
 import { useDeposit } from "../lib/hooks/useDeposit";
 import { useWithdraw } from "../lib/hooks/useWithdraw";
 
-const ASSET_DECIMALS = 6;
-const SHARE_DECIMALS = 6;
-
 const ASSET_SYMBOL = "USDT0";
 const SHARE_SYMBOL = "svUSDT0";
 const SAFE_SYMBOL = "USDC";
@@ -116,6 +113,12 @@ export default function VaultActions() {
   const vault = useVaultState();
   const dep = useDeposit();
   const wd = useWithdraw();
+
+  // Token decimals come from chain (USDT0=6, USDY=18, USDC safe=6, …) so
+  // deposit/withdraw parsing and every amount display are correct for ANY asset.
+  const ASSET_DECIMALS = vault.assetDecimals;
+  const SHARE_DECIMALS = vault.shareDecimals;
+  const SAFE_DECIMALS = vault.safeDecimals;
 
   const [depositAmount, setDepositAmount] = useState<string>("");
   const [withdrawAmount, setWithdrawAmount] = useState<string>("");
@@ -320,7 +323,7 @@ export default function VaultActions() {
           {showSafeMix ? (
             <div className="mono" style={{ ...receiveBoxStyle, flexWrap: "wrap", gap: 4 }}>
               <span style={{ fontSize: 13, color: "var(--text-strong)" }}>
-                ~ {fmtUnits(riskOut, ASSET_DECIMALS, 4)} {ASSET_SYMBOL} + {fmtUnits(safeOut, ASSET_DECIMALS, 4)} {SAFE_SYMBOL}
+                ~ {fmtUnits(riskOut, ASSET_DECIMALS, 4)} {ASSET_SYMBOL} + {fmtUnits(safeOut, SAFE_DECIMALS, 4)} {SAFE_SYMBOL}
               </span>
             </div>
           ) : (

@@ -5,9 +5,6 @@ import { useOraclePrice } from "../lib/hooks/useOraclePrice";
 import { useDexPrice } from "../lib/hooks/useDexPrice";
 import { useDecisionLog } from "../lib/hooks/useDecisionLog";
 
-const ASSET_DECIMALS = 6;
-const SHARE_DECIMALS = 6;
-
 function fmtUsd(n: number): string {
   return `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
@@ -22,8 +19,12 @@ export default function ProtectedPositionStrip() {
   const dex = useDexPrice();
   const log = useDecisionLog();
 
-  const tvlUsd = Number(vault.totalAssets) / 10 ** ASSET_DECIMALS;
-  const userShareDisplay = Number(vault.userShares) / 10 ** SHARE_DECIMALS;
+  // Decimals come from chain (USDT0=6, USDY=18, …) — never hardcoded. While the
+  // reads are in-flight we render `…` instead of a number so we never flash a
+  // wrong-magnitude value (e.g. an 18-dec asset divided as if it were 6-dec).
+  const decimalsReady = !vault.decimalsLoading;
+  const tvlUsd = Number(vault.totalAssets) / 10 ** vault.assetDecimals;
+  const userShareDisplay = Number(vault.userShares) / 10 ** vault.shareDecimals;
   // Nominal $1 per share at 1:1; entry baseline = current value (no historical tracking in V2 yet).
   const userValueUsd = userShareDisplay;
   const entryUsd = userValueUsd;
@@ -59,10 +60,10 @@ export default function ProtectedPositionStrip() {
           marginBottom: 10,
         }}
       >
-        {fmtUsd(tvlUsd)}
+        {decimalsReady ? fmtUsd(tvlUsd) : "…"}
       </div>
       <div className="mono" style={{ fontSize: 12.5, color: "var(--text-muted)", marginBottom: 14 }}>
-        {fmtAssetUnits(userValueUsd)} USDT0  ·  entry {fmtUsd(entryUsd)}  ·  Δ{" "}
+        {decimalsReady ? fmtAssetUnits(userValueUsd) : "…"} USDT0  ·  entry {decimalsReady ? fmtUsd(entryUsd) : "…"}  ·  Δ{" "}
         <span style={{ color: "var(--ink-cyan)" }}>{deltaPct >= 0 ? "+" : ""}{deltaPct.toFixed(1)}%</span>
       </div>
       <div
