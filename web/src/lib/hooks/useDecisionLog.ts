@@ -39,6 +39,14 @@ const HISTORICAL_LOOKBACK_BLOCKS = BigInt(process.env.NEXT_PUBLIC_LOOKBACK_BLOCK
 // Live-watch poll cadence. Default 12s; lower on the fork
 // (NEXT_PUBLIC_WATCH_INTERVAL_MS) for snappier demo updates. Prod unset → 12s.
 const WATCH_INTERVAL_MS = Number(process.env.NEXT_PUBLIC_WATCH_INTERVAL_MS ?? "12000");
+// Absolute fromBlock override (NEXT_PUBLIC_FROM_BLOCK). On an anvil fork the
+// attestation contract still holds the REAL mainnet history — same agentId 106,
+// but those are USDT0 ticks (nav/mkt ≈ $1.00) which bleed into the USDY demo
+// chart and make it start at 1.00 and ramp up. Pinning fromBlock to the fork
+// block shows only fork-created attestations. Prod leaves it unset → window.
+const FROM_BLOCK_OVERRIDE = process.env.NEXT_PUBLIC_FROM_BLOCK
+  ? BigInt(process.env.NEXT_PUBLIC_FROM_BLOCK)
+  : null;
 
 // The agent's decisions are recorded on the SolventAttestation contract via
 // `DecisionRecorded` — NOT as `NewFeedback` on the shared ERC-8004
@@ -81,7 +89,9 @@ export function useDecisionLog(): DecisionLogLive {
     queryFn: async (): Promise<Array<{ blockNumber: bigint; txHash: string; uri: string }>> => {
       if (!publicClient) return [];
       const latest = await publicClient.getBlockNumber();
-      const fromBlock = latest > HISTORICAL_LOOKBACK_BLOCKS ? latest - HISTORICAL_LOOKBACK_BLOCKS : BigInt(0);
+      const fromBlock =
+        FROM_BLOCK_OVERRIDE ??
+        (latest > HISTORICAL_LOOKBACK_BLOCKS ? latest - HISTORICAL_LOOKBACK_BLOCKS : BigInt(0));
       const logs = await publicClient.getLogs({
         address: CONTRACTS.attestation,
         event: DECISION_RECORDED_EVENT,

@@ -120,12 +120,18 @@ export function useVaultState(): VaultStateLive {
     shareDecimals: shareDecimalsRaw ?? 18,
     safeDecimals: safeDecimalsRaw ?? 18,
     // Symbols default to "" while loading — consumers show a placeholder ("…")
-    // rather than a wrong hardcoded "USDT0" before the read resolves.
-    assetSymbol: assetSymbolRaw ?? "",
-    shareSymbol: shareSymbolRaw ?? "",
-    safeSymbol: safeSymbolRaw ?? "",
+    // rather than a wrong hardcoded "USDT0" before the read resolves. An optional
+    // NEXT_PUBLIC_*_SYMBOL env override takes precedence (used on the fork demo,
+    // where the V2.1 vault's on-chain share symbol is still "svUSDT0" but the
+    // asset is USDY — the override relabels shares as "svUSDY"). Prod leaves these
+    // unset, so it reads the true on-chain symbols.
+    assetSymbol: process.env.NEXT_PUBLIC_ASSET_SYMBOL || (assetSymbolRaw ?? ""),
+    shareSymbol: process.env.NEXT_PUBLIC_SHARE_SYMBOL || (shareSymbolRaw ?? ""),
+    safeSymbol: process.env.NEXT_PUBLIC_SAFE_SYMBOL || (safeSymbolRaw ?? ""),
     decimalsLoading: assetDecimalsRaw === undefined || shareDecimalsRaw === undefined,
-    symbolsLoading: assetSymbolRaw === undefined || shareSymbolRaw === undefined,
+    symbolsLoading:
+      (process.env.NEXT_PUBLIC_ASSET_SYMBOL ? false : assetSymbolRaw === undefined) ||
+      (process.env.NEXT_PUBLIC_SHARE_SYMBOL ? false : shareSymbolRaw === undefined),
     address: shortAddr(CONTRACTS.vault),
     isLoading: batch.isLoading || riskBal.isLoading || safeBal.isLoading,
     isError: batch.isError || riskBal.isError || safeBal.isError,
