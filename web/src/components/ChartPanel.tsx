@@ -7,16 +7,18 @@ import type { DecisionEntry } from "../lib/hooks/useDecisionLog";
 const EXPLORER = process.env.NEXT_PUBLIC_MANTLESCAN_URL ?? "https://mantlescan.xyz";
 const VIEW_W = 200;
 const VIEW_H = 80;
-const NAV_MID = 1.0;
-const Y_HALF = 0.005;
-const TOP_VAL = NAV_MID + Y_HALF;
-const BOT_VAL = NAV_MID - Y_HALF;
+// Fallback price used when a payload is missing nav/mkt. Also the implicit
+// centre for a single flat-$1.00 series before any real range exists.
+const FALLBACK_VAL = 1.0;
+// Minimum half-span so a nearly-flat ~$1.00 series isn't amplified into noise:
+// a perfectly flat series renders as ~[0.995, 1.005] (the old hardcoded window).
+const MIN_HALF_SPAN = 0.005;
 
 interface ChartPanelProps {
   entries: DecisionEntry[];
 }
 
-interface Pt { x: number; y: number; entry: DecisionEntry; nav: number; mkt: number; }
+interface Pt { x: number; entry: DecisionEntry; nav: number; mkt: number; }
 
 function priceFromWei(s: string | undefined): number {
   if (!s) return NaN;
@@ -27,8 +29,12 @@ function priceFromWei(s: string | undefined): number {
   }
 }
 
-function clampToView(price: number): number {
-  const t = (TOP_VAL - price) / (TOP_VAL - BOT_VAL);
+// Maps a price to a y-coordinate in viewBox space given the dynamic [bot, top]
+// window. Returns VIEW_H/2 if the window has zero height (degenerate guard).
+function clampToView(price: number, top: number, bot: number): number {
+  const span = top - bot;
+  if (span <= 0) return VIEW_H / 2;
+  const t = (top - price) / span;
   return Math.max(0, Math.min(VIEW_H, t * VIEW_H));
 }
 
@@ -51,23 +57,44 @@ export default function ChartPanel({ entries }: ChartPanelProps) {
       const x = n === 1 ? VIEW_W / 2 : (i * VIEW_W) / (n - 1);
       return {
         x,
-        y: clampToView(isFinite(nav) ? nav : NAV_MID),
         entry: e,
-        nav: isFinite(nav) ? nav : NAV_MID,
-        mkt: isFinite(mkt) ? mkt : NAV_MID,
+        nav: isFinite(nav) ? nav : FALLBACK_VAL,
+        mkt: isFinite(mkt) ? mkt : FALLBACK_VAL,
       };
     });
   }, [entries]);
 
+  // Auto-scaled Y-axis window. Spans every plotted nav+mkt value, padded ~15%
+  // per side, with a minimum half-span floor so a flat ~$1.00 series renders
+  // calmly (~[0.995, 1.005]) instead of being amplified into noise. This is
+  // what lets the USDY fork demo (~1.05 mkt vs ~1.136 nav) actually show on
+  // screen — the old hardcoded 0.995–1.005 window pushed both lines off-top.
+  const { top: TOP, bot: BOT, mid } = useMemo(() => {
+    if (pts.length === 0) {
+      return { top: FALLBACK_VAL + MIN_HALF_SPAN, bot: FALLBACK_VAL - MIN_HALF_SPAN, mid: FALLBACK_VAL };
+    }
+    let lo = Infinity;
+    let hi = -Infinity;
+    for (const p of pts) {
+      if (p.nav < lo) lo = p.nav;
+      if (p.nav > hi) hi = p.nav;
+      if (p.mkt < lo) lo = p.mkt;
+      if (p.mkt > hi) hi = p.mkt;
+    }
+    const center = (hi + lo) / 2;
+    const halfSpan = Math.max(((hi - lo) / 2) * 1.15, MIN_HALF_SPAN);
+    return { top: center + halfSpan, bot: center - halfSpan, mid: center };
+  }, [pts]);
+
   const navPath = useMemo(() => {
     if (pts.length === 0) return "";
-    return pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(2)},${clampToView(p.nav).toFixed(2)}`).join(" ");
-  }, [pts]);
+    return pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(2)},${clampToView(p.nav, TOP, BOT).toFixed(2)}`).join(" ");
+  }, [pts, TOP, BOT]);
 
   const mktPath = useMemo(() => {
     if (pts.length === 0) return "";
-    return pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(2)},${clampToView(p.mkt).toFixed(2)}`).join(" ");
-  }, [pts]);
+    return pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(2)},${clampToView(p.mkt, TOP, BOT).toFixed(2)}`).join(" ");
+  }, [pts, TOP, BOT]);
 
   // Area fill under the MKT line — gives the chart visual body so a calm
   // (flat ~1.000) series doesn't read as a lonely hairline.
@@ -81,7 +108,7 @@ export default function ChartPanel({ entries }: ChartPanelProps) {
   // viewBox → percentage helpers for crisp HTML overlays (axis labels, dots)
   // that must NOT inherit the SVG's non-uniform preserveAspectRatio stretch.
   const leftPct = (x: number) => (x / VIEW_W) * 100;
-  const topPct = (value: number) => (clampToView(value) / VIEW_H) * 100;
+  const topPct = (value: number) => (clampToView(value, TOP, BOT) / VIEW_H) * 100;
 
   function onMove(e: React.MouseEvent<SVGSVGElement>) {
     if (pts.length === 0) return;
@@ -147,9 +174,9 @@ export default function ChartPanel({ entries }: ChartPanelProps) {
         </svg>
 
         {/* axis labels — HTML overlay so they render crisp (SVG text would be stretched by preserveAspectRatio=none) */}
-        <div className="mono" style={{ position: "absolute", top: 2, left: 4, fontSize: 10, color: "var(--text-muted)", opacity: 0.7, pointerEvents: "none" }}>{TOP_VAL.toFixed(3)}</div>
-        <div className="mono" style={{ position: "absolute", top: "50%", left: 4, transform: "translateY(-50%)", fontSize: 10, color: "var(--text-muted)", opacity: 0.5, pointerEvents: "none" }}>NAV 1.000</div>
-        <div className="mono" style={{ position: "absolute", bottom: 2, left: 4, fontSize: 10, color: "var(--text-muted)", opacity: 0.7, pointerEvents: "none" }}>{BOT_VAL.toFixed(3)}</div>
+        <div className="mono" style={{ position: "absolute", top: 2, left: 4, fontSize: 10, color: "var(--text-muted)", opacity: 0.7, pointerEvents: "none" }}>{TOP.toFixed(3)}</div>
+        <div className="mono" style={{ position: "absolute", top: "50%", left: 4, transform: "translateY(-50%)", fontSize: 10, color: "var(--text-muted)", opacity: 0.5, pointerEvents: "none" }}>mid {mid.toFixed(3)}</div>
+        <div className="mono" style={{ position: "absolute", bottom: 2, left: 4, fontSize: 10, color: "var(--text-muted)", opacity: 0.7, pointerEvents: "none" }}>{BOT.toFixed(3)}</div>
 
         {/* latest-point dot (HTML so it stays a circle, not a stretched ellipse) */}
         <div style={{
