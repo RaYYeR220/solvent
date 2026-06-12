@@ -36,8 +36,9 @@ vi.mock("../src/lib/hooks/useDecisionLog", () => ({
   useDecisionLog: useDecisionLogMock,
 }));
 
-// FIX 3 — the strip reads wallet connection state to decide between the user's
-// own stake line and the vault-composition line.
+// FIX 3 — the strip subscribes to wallet connection state (useAccount), but the
+// stake-vs-composition choice keys off vault.userShares: a viewer holding 0
+// shares (no wallet OR connected non-depositor) sees the vault composition.
 vi.mock("wagmi", () => ({
   useAccount: useAccountMock,
 }));
@@ -126,7 +127,8 @@ describe("ProtectedPositionStrip", () => {
     expect(container.textContent).not.toMatch(/\$\d/);
   });
 
-  // FIX 3 — no-wallet case shows vault composition (risk · safe), not a 0.00 stake.
+  // FIX 3 — no-wallet case (userShares 0) shows vault composition (risk · safe),
+  // not a 0.00 stake.
   it("with no wallet connected, shows vault composition '100.00 USDY · 0.00 USDC'", () => {
     useAccountMock.mockReturnValue({ isConnected: false });
     useVaultStateMock.mockReturnValue({
@@ -142,6 +144,27 @@ describe("ProtectedPositionStrip", () => {
     expect(container.textContent).toContain("100.00 USDY");
     expect(container.textContent).toContain("0.00 USDC");
     // No misleading "entry $" user-stake line when there's no wallet.
+    expect(container.textContent).not.toMatch(/entry \$/);
+  });
+
+  // FIX 3 — connected wallet holding 0 shares (the real browser demo case) must
+  // ALSO show the composition, not a misleading "0.00 USDT0 · entry" stake line.
+  // The choice keys off userShares===0n, not isConnected.
+  it("connected but 0 shares → shows vault composition, not a 0.00 stake", () => {
+    useAccountMock.mockReturnValue({ isConnected: true, address: "0xUSER" });
+    useVaultStateMock.mockReturnValue({
+      ...SIX_DEC_STATE,
+      totalAssets: BigInt("100000000000000000000"),
+      userShares: BigInt(0),                            // connected, but no deposit
+      riskAssetBalance: BigInt("100000000000000000000"), // 100 USDY (18 dec)
+      safeAssetBalance: BigInt(0),                       // 0 USDC (6 dec)
+      assetDecimals: 18, shareDecimals: 18, safeDecimals: 6,
+      assetSymbol: "USDY",
+    });
+    const { container } = render(<ProtectedPositionStrip />);
+    expect(container.textContent).toContain("100.00 USDY");
+    expect(container.textContent).toContain("0.00 USDC");
+    // No user-stake line despite the wallet being connected.
     expect(container.textContent).not.toMatch(/entry \$/);
   });
 
@@ -162,8 +185,8 @@ describe("ProtectedPositionStrip", () => {
     expect(container.textContent).toContain("100.00 USDC");
   });
 
-  // FIX 3 — when a wallet IS connected, keep the user-stake line (value · entry · Δ).
-  it("with a wallet connected, shows the user-stake line (entry · Δ)", () => {
+  // FIX 3 — a depositor (userShares > 0) keeps the user-stake line (value · entry · Δ).
+  it("with shares held, shows the user-stake line (entry · Δ)", () => {
     useAccountMock.mockReturnValue({ isConnected: true, address: "0xUSER" });
     useVaultStateMock.mockReturnValue({
       ...SIX_DEC_STATE,

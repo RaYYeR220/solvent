@@ -31,8 +31,14 @@ const MAX_BUFFERED = 50;
 // ~9 days at ~2s/block on Mantle. Wide enough to reach the agent's full
 // attestation history so the chart + decision_log paint immediately on first
 // load rather than waiting for the next hourly tick. rpc.mantle.xyz serves
-// this range in a single getLogs call, so no pagination needed.
-const HISTORICAL_LOOKBACK_BLOCKS = BigInt(400_000);
+// this range in a single getLogs call, so no pagination needed. Env-overridable
+// (NEXT_PUBLIC_LOOKBACK_BLOCKS) so an anvil fork — whose demo attestations are
+// all very recent — can use a small range and avoid a slow initial getLogs.
+// Prod leaves it unset → 400k unchanged.
+const HISTORICAL_LOOKBACK_BLOCKS = BigInt(process.env.NEXT_PUBLIC_LOOKBACK_BLOCKS ?? "400000");
+// Live-watch poll cadence. Default 12s; lower on the fork
+// (NEXT_PUBLIC_WATCH_INTERVAL_MS) for snappier demo updates. Prod unset → 12s.
+const WATCH_INTERVAL_MS = Number(process.env.NEXT_PUBLIC_WATCH_INTERVAL_MS ?? "12000");
 
 // The agent's decisions are recorded on the SolventAttestation contract via
 // `DecisionRecorded` — NOT as `NewFeedback` on the shared ERC-8004
@@ -117,7 +123,7 @@ export function useDecisionLog(): DecisionLogLive {
       });
     },
     poll: true,
-    pollingInterval: 12_000,
+    pollingInterval: WATCH_INTERVAL_MS,
   });
 
   // Merge historical + live, dedupe by txHash, ascending blockNumber.

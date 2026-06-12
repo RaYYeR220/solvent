@@ -40,7 +40,11 @@ export default function ProtectedPositionStrip() {
   const oracle = useOraclePrice();
   const dex = useDexPrice();
   const log = useDecisionLog();
-  const { isConnected } = useAccount();
+  // useAccount() is read for its side-effect of subscribing to connection
+  // state, but the composition-vs-stake choice keys off `userShares` (below)
+  // rather than `isConnected`: a connected wallet holding 0 shares should still
+  // see the vault composition, not a misleading "0.00" stake.
+  useAccount();
 
   // Decimals come from chain (USDT0=6, USDY=18, …) — never hardcoded. While the
   // reads are in-flight we render `…` instead of a number so we never flash a
@@ -53,11 +57,14 @@ export default function ProtectedPositionStrip() {
   const entryUsd = userValueUsd;
   const deltaPct = 0;
 
-  // Vault composition (risk + safe balances) — shown when no wallet is
-  // connected so the demo communicates protection (USDY→USDC) rather than a
-  // misleading "0.00" user stake.
+  // Vault composition (risk + safe balances) — shown whenever the viewer holds
+  // no shares (no wallet OR connected-but-never-deposited) so the demo
+  // communicates protection (USDY→USDC) rather than a misleading "0.00" stake.
   const riskUnits = Number(vault.riskAssetBalance) / 10 ** vault.assetDecimals;
   const safeUnits = Number(vault.safeAssetBalance) / 10 ** vault.safeDecimals;
+  // Viewer holds no shares → show composition. Only a depositor (userShares > 0)
+  // sees their own stake line.
+  const holdsShares = vault.userShares > BigInt(0);
 
   // REGIME / NAV / MKT / DIV mirror the agent's LATEST on-chain attestation, so
   // the strip shows what the agent actually decided (consistent with the
@@ -115,16 +122,17 @@ export default function ProtectedPositionStrip() {
         {decimalsReady ? fmtUsd(tvlUsd) : "…"}
       </div>
       <div className="mono" style={{ fontSize: 12.5, color: "var(--text-muted)", marginBottom: 14 }}>
-        {isConnected ? (
-          // Connected: the user's own stake (value · entry · Δ).
+        {holdsShares ? (
+          // Depositor (userShares > 0): the user's own stake (value · entry · Δ).
           <>
             {decimalsReady ? fmtAssetUnits(userValueUsd) : "…"} {vault.assetSymbol || "…"}  ·  entry {decimalsReady ? fmtUsd(entryUsd) : "…"}  ·  Δ{" "}
             <span style={{ color: "var(--ink-cyan)" }}>{deltaPct >= 0 ? "+" : ""}{deltaPct.toFixed(1)}%</span>
           </>
         ) : (
-          // No wallet (demo): vault composition — risk vs safe holdings. Visibly
-          // flips e.g. "100.00 USDY · 0.00 USDC" → "0.00 USDY · 100.00 USDC"
-          // after the agent swaps into safety.
+          // No shares (no wallet OR connected non-depositor — the demo case):
+          // vault composition, risk vs safe holdings. Visibly flips e.g.
+          // "100.00 USDY · 0.00 USDC" → "0.00 USDY · 100.00 USDC" after the
+          // agent swaps into safety.
           <>
             {decimalsReady ? fmtAssetUnits(riskUnits) : "…"} {vault.assetSymbol || "…"}  ·  {decimalsReady ? fmtAssetUnits(safeUnits) : "…"} {vault.safeSymbol || "…"}
           </>
