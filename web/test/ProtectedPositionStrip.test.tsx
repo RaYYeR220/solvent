@@ -2,6 +2,8 @@ import { render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const { useVaultStateMock } = vi.hoisted(() => ({ useVaultStateMock: vi.fn() }));
+const { useAccountMock } = vi.hoisted(() => ({ useAccountMock: vi.fn() }));
+const { useDecisionLogMock } = vi.hoisted(() => ({ useDecisionLogMock: vi.fn() }));
 const SIX_DEC_STATE = {
   totalAssets: BigInt(1_234_560_000),    // 1234.56 USDT0 (6 dec)
   userShares: BigInt(100_000_000),       // 100 svUSDT0
@@ -31,7 +33,13 @@ vi.mock("../src/lib/hooks/useDexPrice", () => ({
 }));
 
 vi.mock("../src/lib/hooks/useDecisionLog", () => ({
-  useDecisionLog: () => ({ entries: [], attestationsTotal: 42, isLoading: false }),
+  useDecisionLog: useDecisionLogMock,
+}));
+
+// FIX 3 — the strip reads wallet connection state to decide between the user's
+// own stake line and the vault-composition line.
+vi.mock("wagmi", () => ({
+  useAccount: useAccountMock,
 }));
 
 import ProtectedPositionStrip from "../src/components/ProtectedPositionStrip";
@@ -39,17 +47,21 @@ import ProtectedPositionStrip from "../src/components/ProtectedPositionStrip";
 describe("ProtectedPositionStrip", () => {
   beforeEach(() => {
     useVaultStateMock.mockReturnValue(SIX_DEC_STATE);
+    // Default: no wallet connected (the demo case).
+    useAccountMock.mockReturnValue({ isConnected: false });
+    // Default: no attestation yet → strip falls back to live oracle/dex reads.
+    useDecisionLogMock.mockReturnValue({ entries: [], attestationsTotal: 42, isLoading: false });
   });
   afterEach(() => {
     useVaultStateMock.mockReset();
+    useAccountMock.mockReset();
+    useDecisionLogMock.mockReset();
   });
 
-  it("renders TVL big number + user position + status row", () => {
+  it("renders TVL big number + status row", () => {
     const { getByText, container } = render(<ProtectedPositionStrip />);
     // $1,234.56 TVL
     expect(getByText(/\$1,234\.56/)).toBeTruthy();
-    // user shares line includes "100" share count
-    expect(container.textContent).toContain("100.00");
     // asset symbol comes from chain — USDT0 on the mainnet vault.
     expect(container.textContent).toContain("USDT0");
     // status row mentions REGIME / NAV / MKT
@@ -112,5 +124,111 @@ describe("ProtectedPositionStrip", () => {
     expect(container.textContent).toContain("…");
     // No $ amount flashed while loading.
     expect(container.textContent).not.toMatch(/\$\d/);
+  });
+
+  // FIX 3 — no-wallet case shows vault composition (risk · safe), not a 0.00 stake.
+  it("with no wallet connected, shows vault composition '100.00 USDY · 0.00 USDC'", () => {
+    useAccountMock.mockReturnValue({ isConnected: false });
+    useVaultStateMock.mockReturnValue({
+      ...SIX_DEC_STATE,
+      totalAssets: BigInt("100000000000000000000"),
+      userShares: BigInt(0),                            // no stake
+      riskAssetBalance: BigInt("100000000000000000000"), // 100 USDY (18 dec)
+      safeAssetBalance: BigInt(0),                       // 0 USDC (6 dec)
+      assetDecimals: 18, shareDecimals: 18, safeDecimals: 6,
+      assetSymbol: "USDY",
+    });
+    const { container } = render(<ProtectedPositionStrip />);
+    expect(container.textContent).toContain("100.00 USDY");
+    expect(container.textContent).toContain("0.00 USDC");
+    // No misleading "entry $" user-stake line when there's no wallet.
+    expect(container.textContent).not.toMatch(/entry \$/);
+  });
+
+  // FIX 3 — after the protective swap the composition flips: 0 USDY · 100 USDC.
+  it("after the swap, composition reads '0.00 USDY · 100.00 USDC'", () => {
+    useAccountMock.mockReturnValue({ isConnected: false });
+    useVaultStateMock.mockReturnValue({
+      ...SIX_DEC_STATE,
+      totalAssets: BigInt("100000000"), // 100 USDC equiv (6 dec) — value preserved
+      userShares: BigInt(0),
+      riskAssetBalance: BigInt(0),       // 0 USDY
+      safeAssetBalance: BigInt("100000000"), // 100 USDC (6 dec)
+      assetDecimals: 18, shareDecimals: 18, safeDecimals: 6,
+      assetSymbol: "USDY",
+    });
+    const { container } = render(<ProtectedPositionStrip />);
+    expect(container.textContent).toContain("0.00 USDY");
+    expect(container.textContent).toContain("100.00 USDC");
+  });
+
+  // FIX 3 — when a wallet IS connected, keep the user-stake line (value · entry · Δ).
+  it("with a wallet connected, shows the user-stake line (entry · Δ)", () => {
+    useAccountMock.mockReturnValue({ isConnected: true, address: "0xUSER" });
+    useVaultStateMock.mockReturnValue({
+      ...SIX_DEC_STATE,
+      userShares: BigInt(100_000_000), // 100 svUSDT0 (6 dec)
+    });
+    const { container } = render(<ProtectedPositionStrip />);
+    expect(container.textContent).toContain("100.00");
+    expect(container.textContent).toMatch(/entry \$/);
+    expect(container.textContent).toMatch(/Δ/);
+  });
+
+  // FIX 2 — REGIME comes from the agent's latest attestation, NOT a strip-local
+  // threshold. With a high live divergence the old hardcode would show TERMINAL;
+  // the attestation says CALM, so the strip must show CALM.
+  it("sources REGIME from the latest attestation — shows CALM despite high live divergence", () => {
+    useAccountMock.mockReturnValue({ isConnected: false });
+    useDecisionLogMock.mockReturnValue({
+      attestationsTotal: 7,
+      isLoading: false,
+      entries: [
+        {
+          blockNumber: BigInt(100),
+          txHash: "0xabc",
+          uri: "ipfs://x",
+          payloadLoading: false,
+          payload: {
+            regime: "CALM",
+            signals: {
+              // ~7% below NAV — a hardcoded 50/500-bps rule would scream TERMINAL.
+              navPrice: "1136000000000000000",   // 1.136 (1e18-scaled)
+              marketPrice: "1056000000000000000", // 1.056
+            },
+          },
+        },
+      ],
+    });
+    const { container } = render(<ProtectedPositionStrip />);
+    expect(container.textContent).toMatch(/REGIME:CALM/);
+    expect(container.textContent).not.toMatch(/REGIME:TERMINAL/);
+    // NAV/MKT mirror the attestation's signal prices.
+    expect(container.textContent).toContain("1.136");
+    expect(container.textContent).toContain("1.056");
+    // DIV reflects the attested prices (~704 bps), still labelled CALM.
+    expect(container.textContent).toMatch(/DIV:704bps/);
+  });
+
+  // FIX 2 — TERMINAL attestation maps to the short "TERMINAL" label.
+  it("maps a TERMINAL_DEPEG attestation regime to the 'TERMINAL' display", () => {
+    useDecisionLogMock.mockReturnValue({
+      attestationsTotal: 3,
+      isLoading: false,
+      entries: [
+        {
+          blockNumber: BigInt(200),
+          txHash: "0xdef",
+          uri: "ipfs://y",
+          payloadLoading: false,
+          payload: {
+            regime: "TERMINAL_DEPEG",
+            signals: { navPrice: "1000000000000000000", marketPrice: "900000000000000000" },
+          },
+        },
+      ],
+    });
+    const { container } = render(<ProtectedPositionStrip />);
+    expect(container.textContent).toMatch(/REGIME:TERMINAL/);
   });
 });
